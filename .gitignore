@@ -1,0 +1,5 @@
+.envrc
+.direnv
+.cache
+config.lua
+.gdb_history
