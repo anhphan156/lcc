@@ -1,11 +1,11 @@
 project('lcc', 'c')
 
-incdir = include_directories('include')
 
 exe = executable('lcc', 
   'src/main.c',
   'src/lexer.c',
-  include_directories : incdir,
+  include_directories: 'include',
+  install: true,
 )
 
 run_target('run', 

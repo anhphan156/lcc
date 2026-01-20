@@ -6,8 +6,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-char *read_file(const char *, size_t *);
-void  close_file(char *, size_t);
+static char *read_file(const char *, size_t *);
+static void  close_file(char *, size_t);
 
 int main(int argc, char **argv) {
     char *src_file_path = argv[optind++];
@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-char *read_file(const char *path, size_t *buffer_length) {
+static char *read_file(const char *path, size_t *buffer_length) {
     int fd = open(path, O_RDONLY);
     if (fd == -1) {
         perror("open");
@@ -56,7 +56,7 @@ char *read_file(const char *path, size_t *buffer_length) {
     return buffer;
 }
 
-void close_file(char *buffer, size_t len) {
+static void close_file(char *buffer, size_t len) {
     if (munmap(buffer, len) == -1) {
         perror("munmap");
     }
