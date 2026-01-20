@@ -2,6 +2,7 @@
 #include "token.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 static char    *source      = 0;
@@ -27,12 +28,14 @@ static void advance() {
 
 static void add_token(const enum TOKEN_TYPE type) {
     uint32_t token_len = cur - token_start;
-    char     token[token_len];
+    char    *token     = malloc(token_len + 1);
 
     memcpy(token, source + token_start, token_len);
     token[token_len] = 0;
 
     printf("Token: %s on line %d\n", token, line);
+
+    free(token);
 }
 
 static void parse_number() {

@@ -14,6 +14,7 @@
         meson
         ninja
         llvmPackages.clang-tools
+        valgrind
       ];
     };
   };
