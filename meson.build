@@ -8,11 +8,13 @@ exe = executable(
   install: true,
 )
 
+run_input = '../test_input/00'
+
 run_target(
   'run', 
   command: [
     exe,
-    '../test_input/00'
+    run_input
   ]
 )
 
@@ -22,6 +24,6 @@ run_target(
     'valgrind',
     '--leak-check=full',
     exe,
-    '../test_input/00'
+    run_input
   ]
 )

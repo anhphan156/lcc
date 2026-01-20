@@ -15,7 +15,9 @@ int main(int argc, char **argv) {
     size_t src_len = 0;
     char  *src     = read_file(src_file_path, &src_len);
 
-    lexical_scanning(src, src_len);
+    lexical_scanner_setup(src, src_len);
+    while (not_end())
+        lexical_scanning();
 
     close_file(src, src_len);
 

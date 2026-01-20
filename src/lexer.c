@@ -12,7 +12,7 @@ static uint32_t cur         = 0;
 static uint32_t line        = 1;
 
 static char peek() {
-    if (cur >= source_len) {
+    if (cur >= source_len || cur < 0) {
         return 0x0;
     }
 
@@ -59,42 +59,49 @@ static void parse_number() {
     add_token(T_INTLIT);
 }
 
-void lexical_scanning(char *input, size_t input_len) {
+void lexical_scanning() {
+scan:
+    token_start       = cur;
+    char current_char = peek();
+    advance();
+
+    if (current_char <= '9' && current_char >= '0') {
+        parse_number();
+        return;
+    }
+
+    switch (current_char) {
+    case 0xA: // newline
+        line += 1;
+    case 0x20: // space
+    case 0x9:  // tab
+        if (cur == -1)
+            break;
+        goto scan;
+    case '+':
+        add_token(T_PLUS);
+        break;
+    case '-':
+        add_token(T_MINUS);
+        break;
+    case '*':
+        add_token(T_STAR);
+        break;
+    case '/':
+        add_token(T_SLASH);
+        break;
+
+    default:
+        printf("Unrecognized token %c\n", current_char);
+        break;
+    }
+}
+
+void lexical_scanner_setup(char *input, size_t input_len) {
     source     = input;
     source_len = input_len;
+}
 
-    while (cur != -1) {
-        token_start       = cur;
-        char current_char = peek();
-        advance();
-
-        if (current_char <= '9' && current_char >= '0') {
-            parse_number();
-            continue;
-        }
-
-        switch (current_char) {
-        case 0xA: // newline
-            line += 1;
-        case 0x20: // space
-        case 0x9:  // tab
-            break;
-        case '+':
-            add_token(T_PLUS);
-            break;
-        case '-':
-            add_token(T_MINUS);
-            break;
-        case '*':
-            add_token(T_STAR);
-            break;
-        case '/':
-            add_token(T_SLASH);
-            break;
-
-        default:
-            printf("Unrecognized token %c\n", current_char);
-            break;
-        }
-    }
+bool not_end() {
+    return cur != -1;
 }
