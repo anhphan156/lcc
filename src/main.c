@@ -1,4 +1,5 @@
 #include "lexer.h"
+#include "token.h"
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,8 +17,14 @@ int main(int argc, char **argv) {
     char  *src     = read_file(src_file_path, &src_len);
 
     lexical_scanner_setup(src, src_len);
-    while (not_end())
-        lexical_scanning();
+
+    struct token token;
+
+    while (not_end()) {
+        lexical_scan(&token);
+        printf("Token: %s on line %d\n", token.lexeme, token.line);
+        clean_token(&token);
+    }
 
     close_file(src, src_len);
 
