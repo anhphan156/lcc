@@ -61,7 +61,7 @@ static void parse_number() {
     add_token(T_INTLIT);
 }
 
-void lexical_scan(struct token *token) {
+int8_t lexical_scan(struct token *token) {
     _token = token;
 scan:
     token_start       = cur;
@@ -70,7 +70,7 @@ scan:
 
     if (current_char <= '9' && current_char >= '0') {
         parse_number();
-        return;
+        return 0;
     }
 
     switch (current_char) {
@@ -78,8 +78,8 @@ scan:
         line += 1;
     case 0x20: // space
     case 0x9:  // tab
-        if (cur == -1) {
-            return;
+        if (!not_end()) {
+            return -1;
         }
         goto scan; // skip all whitespaces and scan again for the next token
     case '+':
@@ -99,6 +99,8 @@ scan:
         printf("Unrecognized token %x on line %d\n", current_char, line);
         break;
     }
+
+    return 0;
 }
 
 void lexical_scanner_setup(char *input, size_t input_len) {

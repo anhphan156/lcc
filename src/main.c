@@ -21,9 +21,10 @@ int main(int argc, char **argv) {
     struct token token;
 
     while (not_end()) {
-        lexical_scan(&token);
-        printf("Token: %s on line %d\n", token.lexeme, token.line);
-        clean_token(&token);
+        if (lexical_scan(&token) != -1) {
+            printf("Token: %s on line %d\n", token.lexeme, token.line);
+            clean_token(&token);
+        }
     }
 
     close_file(src, src_len);
