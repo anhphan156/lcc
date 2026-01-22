@@ -1,0 +1,175 @@
+#include "parser.h"
+#include "ast.h"
+#include "breakpoint.h"
+#include "lexer.h"
+#include "token.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+static struct token current_token;
+
+static struct ast_node *addition();
+static struct ast_node *multiplication();
+static struct ast_node *primary();
+
+static struct ast_node *mk_node(enum AST_NODE_TYPE, enum TOKEN_TYPE, struct ast_node *, struct ast_node *);
+static struct ast_node *mk_leaf(enum AST_NODE_TYPE, enum TOKEN_TYPE, union token_literal, struct ast_node *, struct ast_node *);
+
+struct ast_node *ast_parse() {
+    struct ast_node *expr = addition();
+    return expr;
+}
+
+void ast_clean(struct ast_node *expr) {
+    struct ast_node *left  = expr->left;
+    struct ast_node *right = expr->right;
+
+    if (expr)
+        free(expr);
+
+    if (left)
+        ast_clean(left);
+
+    if (right)
+        ast_clean(right);
+}
+
+void ast_print(struct ast_node *expr, int level) {
+    switch (expr->ast_node_type) {
+    case AST_BIN_OP:
+        printf("[AST_BIN_OP: ");
+        if (expr->token_type == T_PLUS)
+            printf("(+)");
+        if (expr->token_type == T_MINUS)
+            printf("(-)");
+        if (expr->token_type == T_STAR)
+            printf("(*)");
+        if (expr->token_type == T_SLASH)
+            printf("(/)");
+
+        printf("\n");
+        for (int i = 0; i < level; i++)
+            printf("\t");
+        ast_print(expr->left, level + 1);
+
+        printf("\n");
+        for (int i = 0; i < level; i++)
+            printf("\t");
+        ast_print(expr->right, level + 1);
+
+        printf("\n");
+        for (int i = 1; i < level; i++)
+            printf("\t");
+        printf("]");
+        break;
+    case AST_INTEGER:
+        printf("[AST_NUMBER (%ld)]", expr->value.intval);
+        break;
+    case AST_DOUBLE:
+        printf("[AST_NUMBER (%f)]", expr->value.doubleval);
+        break;
+    default:
+        printf("ah");
+        break;
+    }
+}
+
+static struct ast_node *addition() {
+    struct ast_node *expr = multiplication();
+
+    while (1) {
+        if (lexical_scan(&current_token) == -1)
+            break;
+
+        if (current_token.type == T_PLUS || current_token.type == T_MINUS) {
+            enum TOKEN_TYPE  token_type = current_token.type;
+            struct ast_node *left       = expr;
+            expr                        = mk_node(AST_BIN_OP, token_type, left, multiplication());
+
+            continue;
+        }
+
+        lexical_go_back();
+        break;
+    }
+
+    return expr;
+}
+
+static struct ast_node *multiplication() {
+    struct ast_node *expr = primary();
+
+    while (1) {
+        if (lexical_scan(&current_token) == -1)
+            break;
+
+        if (current_token.type == T_STAR || current_token.type == T_SLASH) {
+            enum TOKEN_TYPE  token_type = current_token.type;
+            struct ast_node *left       = expr;
+            expr                        = mk_node(AST_BIN_OP, token_type, left, primary());
+            continue;
+        }
+
+        lexical_go_back();
+        break;
+    }
+
+    return expr;
+}
+
+static struct ast_node *primary() {
+    struct ast_node *expr;
+
+    if (lexical_scan(&current_token) == -1) {
+        fprintf(stderr, "Unexpected EOF\n");
+        exit(1);
+    };
+
+    switch (current_token.type) {
+    case T_INTLIT:
+        expr = mk_leaf(AST_INTEGER, current_token.type, current_token.value, NULL, NULL);
+        break;
+    case T_DOUBLELIT:
+        expr = mk_leaf(AST_DOUBLE, current_token.type, current_token.value, NULL, NULL);
+        break;
+    default:
+        printf("Unexpected token: %.*s on line %d\n", (int)current_token.lexeme_length, current_token.lexeme_start, current_token.line);
+        exit(1);
+        break;
+    }
+
+    return expr;
+}
+
+static struct ast_node *mk_node(enum AST_NODE_TYPE ast_node_type, enum TOKEN_TYPE token_type, struct ast_node *left, struct ast_node *right) {
+    struct ast_node *node = (struct ast_node *)malloc(sizeof(struct ast_node));
+    if (node == NULL) {
+        fprintf(stderr, "Unable to create new ast_node");
+        BREAKPOINT;
+        exit(1);
+    }
+    node->ast_node_type = ast_node_type;
+    node->token_type    = token_type;
+    node->left          = left;
+    node->right         = right;
+
+    union token_literal empty_literal = {0};
+    node->value                       = empty_literal;
+
+    return node;
+}
+static struct ast_node *mk_leaf(enum AST_NODE_TYPE type, enum TOKEN_TYPE token_type, union token_literal value, struct ast_node *left, struct ast_node *right) {
+    struct ast_node *node = (struct ast_node *)malloc(sizeof(struct ast_node));
+    if (node == NULL) {
+        fprintf(stderr, "Unable to create new ast_node");
+        BREAKPOINT;
+        exit(1);
+    }
+    node->ast_node_type = type;
+    node->token_type    = token_type;
+    node->value         = value;
+    node->left          = left;
+    node->right         = right;
+
+    return node;
+}

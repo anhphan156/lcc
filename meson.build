@@ -1,9 +1,14 @@
 project('lcc', 'c')
 
+if get_option('buildtype') == 'debug'
+  add_project_arguments('-DDEBUG_BUILD', language: 'c')
+endif
+
 exe = executable(
   'lcc', 
   'src/main.c',
   'src/lexer.c',
+  'src/parser.c',
   include_directories: 'include',
   install: true,
 )

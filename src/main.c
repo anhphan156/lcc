@@ -1,8 +1,10 @@
 #include "lexer.h"
+#include "parser.h"
 #include "token.h"
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -18,23 +20,17 @@ int main(int argc, char **argv) {
 
     lexical_scanner_setup(src, src_len);
 
-    struct token token;
+    struct ast_node *expr = ast_parse();
+    ast_print(expr, 1);
+    ast_clean(expr);
 
-    while (not_end()) {
-        if (lexical_scan(&token) != -1) {
-            switch (token.type) {
-            case T_DOUBLELIT:
-                printf("Token: %f on line %d\n", token.value.doubleval, token.line);
-                break;
-            case T_INTLIT:
-                printf("Token: %ld on line %d\n", token.value.intval, token.line);
-                break;
-            default:
-                printf("Token: enum(%d) on line %d\n", token.type, token.line);
-                break;
-            }
-        }
-    }
+    // struct token token;
+
+    // while (not_end()) {
+    //     if (lexical_scan(&token) != -1) {
+    //         printf("Token: %.*s on line %d\n", (int)token.lexeme_length, token.lexeme_start, token.line);
+    //     }
+    // }
 
     close_file(src, src_len);
 

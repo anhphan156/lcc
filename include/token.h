@@ -1,6 +1,7 @@
 #ifndef _TOKEN_H
 #define _TOKEN_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 enum TOKEN_TYPE {
@@ -17,14 +18,18 @@ enum TOKEN_TYPE {
     T_STRLIT,
 };
 
+union token_literal {
+    int64_t  intval;
+    double   doubleval;
+    uint32_t id;
+};
+
 struct token {
-    union {
-        int64_t  intval;
-        double   doubleval;
-        uint32_t id;
-    } value;
-    uint32_t        line;
-    enum TOKEN_TYPE type;
+    union token_literal value;
+    const char         *lexeme_start;
+    size_t              lexeme_length;
+    uint32_t            line;
+    enum TOKEN_TYPE     type;
 };
 
 #endif

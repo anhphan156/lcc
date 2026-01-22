@@ -1,16 +1,20 @@
 #include "lexer.h"
+#include "breakpoint.h"
 #include "token.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-static char         *source      = 0;
+static const char   *source      = 0;
 static size_t        source_len  = 0;
 static uint32_t      token_start = 0;
 static uint32_t      cur         = 0;
 static uint32_t      line        = 1;
 static struct token *_token      = NULL;
+
+static uint32_t old_token_start = 0;
+static uint32_t old_cur         = 0;
 
 static void add_token(const enum TOKEN_TYPE);
 static void add_int_token(const enum TOKEN_TYPE);
@@ -20,8 +24,14 @@ static void advance();
 static void parse_number();
 
 int8_t lexical_scan(struct token *token) {
+    if (!not_end())
+        return -1;
+
     _token = token;
 scan:
+    old_token_start = token_start;
+    old_cur         = cur;
+
     token_start       = cur;
     char current_char = peek();
     advance();
@@ -61,7 +71,12 @@ scan:
     return 0;
 }
 
-void lexical_scanner_setup(char *input, size_t input_len) {
+void lexical_go_back() {
+    token_start = old_token_start;
+    cur         = old_cur;
+}
+
+void lexical_scanner_setup(const char *input, size_t input_len) {
     source     = input;
     source_len = input_len;
 }
@@ -84,16 +99,18 @@ static void advance() {
 
 static void add_token(const enum TOKEN_TYPE type) {
     if (_token == NULL) {
-        __asm__ volatile("int3");
+        BREAKPOINT;
     }
 
-    _token->type = type;
-    _token->line = line;
+    _token->type          = type;
+    _token->line          = line;
+    _token->lexeme_start  = source + token_start;
+    _token->lexeme_length = cur - token_start;
 }
 
 static void add_int_token(const enum TOKEN_TYPE type) {
     if (_token == NULL) {
-        __asm__ volatile("int3");
+        BREAKPOINT;
     }
 
     size_t lexeme_len = cur - token_start;
@@ -104,14 +121,16 @@ static void add_int_token(const enum TOKEN_TYPE type) {
     int64_t value = atoi(lexeme_str);
     free(lexeme_str);
 
-    _token->value.intval = value;
-    _token->line         = line;
-    _token->type         = type;
+    _token->value.intval  = value;
+    _token->line          = line;
+    _token->type          = type;
+    _token->lexeme_start  = source + token_start;
+    _token->lexeme_length = cur - token_start;
 }
 
 static void add_double_token(const enum TOKEN_TYPE type) {
     if (_token == NULL) {
-        __asm__ volatile("int3");
+        BREAKPOINT;
     }
 
     size_t lexeme_len = cur - token_start;
@@ -125,6 +144,8 @@ static void add_double_token(const enum TOKEN_TYPE type) {
     _token->value.doubleval = value;
     _token->line            = line;
     _token->type            = type;
+    _token->lexeme_start    = source + token_start;
+    _token->lexeme_length   = cur - token_start;
 }
 
 static void parse_number() {
