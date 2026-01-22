@@ -22,8 +22,17 @@ int main(int argc, char **argv) {
 
     while (not_end()) {
         if (lexical_scan(&token) != -1) {
-            printf("Token: %s on line %d\n", token.lexeme, token.line);
-            clean_token(&token);
+            switch (token.type) {
+            case T_DOUBLELIT:
+                printf("Token: %f on line %d\n", token.value.doubleval, token.line);
+                break;
+            case T_INTLIT:
+                printf("Token: %ld on line %d\n", token.value.intval, token.line);
+                break;
+            default:
+                printf("Token: enum(%d) on line %d\n", token.type, token.line);
+                break;
+            }
         }
     }
 

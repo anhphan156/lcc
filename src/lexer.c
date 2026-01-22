@@ -12,54 +12,12 @@ static uint32_t      cur         = 0;
 static uint32_t      line        = 1;
 static struct token *_token      = NULL;
 
-static char peek() {
-    if (cur >= source_len || cur < 0) {
-        return 0x0;
-    }
-
-    return source[cur];
-}
-
-static void advance() {
-    cur += 1;
-}
-
-static void add_token(const enum TOKEN_TYPE type) {
-    uint32_t lexeme_len = cur - token_start;
-    char    *lexeme     = malloc(lexeme_len + 1);
-
-    memcpy(lexeme, source + token_start, lexeme_len);
-    lexeme[lexeme_len] = 0;
-
-    if (_token == NULL) {
-        __asm__ volatile("int3");
-    }
-
-    _token->type   = type;
-    _token->lexeme = lexeme;
-    _token->line   = line;
-}
-
-static void parse_number() {
-    char current_char = peek();
-
-    while (current_char <= '9' && current_char >= '0') {
-        advance();
-        current_char = peek();
-    }
-
-    if (current_char == '.') {
-        do {
-            advance();
-            current_char = peek();
-        } while (current_char <= '9' && current_char >= '0');
-
-        add_token(T_FLOATLIT);
-        return;
-    }
-
-    add_token(T_INTLIT);
-}
+static void add_token(const enum TOKEN_TYPE);
+static void add_int_token(const enum TOKEN_TYPE);
+static void add_double_token(const enum TOKEN_TYPE);
+static char peek();
+static void advance();
+static void parse_number();
 
 int8_t lexical_scan(struct token *token) {
     _token = token;
@@ -112,9 +70,80 @@ bool not_end() {
     return cur < source_len;
 }
 
-void clean_token(struct token *token) {
-    if (token->lexeme != NULL) {
-        free((void *)token->lexeme);
-        token->lexeme = NULL;
+static char peek() {
+    if (cur >= source_len || cur < 0) {
+        return 0x0;
     }
+
+    return source[cur];
+}
+
+static void advance() {
+    cur += 1;
+}
+
+static void add_token(const enum TOKEN_TYPE type) {
+    if (_token == NULL) {
+        __asm__ volatile("int3");
+    }
+
+    _token->type = type;
+    _token->line = line;
+}
+
+static void add_int_token(const enum TOKEN_TYPE type) {
+    if (_token == NULL) {
+        __asm__ volatile("int3");
+    }
+
+    size_t lexeme_len = cur - token_start;
+    char  *lexeme_str = (char *)malloc(lexeme_len + 1);
+    memcpy(lexeme_str, source + token_start, lexeme_len);
+    lexeme_str[lexeme_len] = 0;
+
+    int64_t value = atoi(lexeme_str);
+    free(lexeme_str);
+
+    _token->value.intval = value;
+    _token->line         = line;
+    _token->type         = type;
+}
+
+static void add_double_token(const enum TOKEN_TYPE type) {
+    if (_token == NULL) {
+        __asm__ volatile("int3");
+    }
+
+    size_t lexeme_len = cur - token_start;
+    char  *lexeme_str = (char *)malloc(lexeme_len + 1);
+    memcpy(lexeme_str, source + token_start, lexeme_len);
+    lexeme_str[lexeme_len] = 0;
+
+    double value = strtod(lexeme_str, NULL);
+    free(lexeme_str);
+
+    _token->value.doubleval = value;
+    _token->line            = line;
+    _token->type            = type;
+}
+
+static void parse_number() {
+    char current_char = peek();
+
+    while (current_char <= '9' && current_char >= '0') {
+        advance();
+        current_char = peek();
+    }
+
+    if (current_char == '.') {
+        do {
+            advance();
+            current_char = peek();
+        } while (current_char <= '9' && current_char >= '0');
+
+        add_double_token(T_DOUBLELIT);
+        return;
+    }
+
+    add_int_token(T_INTLIT);
 }

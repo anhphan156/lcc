@@ -13,14 +13,18 @@ enum TOKEN_TYPE {
     T_LPAREN,
     T_RPAREN,
     T_INTLIT,
-    T_FLOATLIT,
+    T_DOUBLELIT,
     T_STRLIT,
 };
 
 struct token {
-    enum TOKEN_TYPE type;
-    const char     *lexeme;
+    union {
+        int64_t  intval;
+        double   doubleval;
+        uint32_t id;
+    } value;
     uint32_t        line;
+    enum TOKEN_TYPE type;
 };
 
 #endif
