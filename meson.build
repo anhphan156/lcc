@@ -9,6 +9,7 @@ exe = executable(
   'src/main.c',
   'src/lexer.c',
   'src/parser.c',
+  'src/codegen.c',
   include_directories: 'include',
   install: true,
 )

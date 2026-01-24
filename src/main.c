@@ -1,5 +1,7 @@
+#include "codegen.h"
 #include "lexer.h"
 #include "parser.h"
+#include "sys/types.h"
 #include "token.h"
 #include <fcntl.h>
 #include <stdio.h>
@@ -22,18 +24,24 @@ int main(int argc, char **argv) {
 
     struct ast_node *expr = ast_parse();
     ast_print(expr, 1);
+    generate_code(expr);
     ast_clean(expr);
-
-    // struct token token;
-
-    // while (not_end()) {
-    //     if (lexical_scan(&token) != -1) {
-    //         printf("Token: %.*s on line %d\n", (int)token.lexeme_length, token.lexeme_start, token.line);
-    //     }
-    // }
 
     close_file(src, src_len);
 
+    pid_t pid = fork();
+    if (pid == -1) {
+        perror("fork");
+        goto main_end;
+    } else if (pid == 0) {
+        int ret = execlp("gcc", "gcc", "-o", "out", "code.s", NULL);
+        if (ret == -1) {
+            perror("execvl");
+            goto main_end;
+        }
+    }
+
+main_end:
     return 0;
 }
 

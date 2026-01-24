@@ -65,6 +65,7 @@ scan:
 
     default:
         printf("Unrecognized token %x on line %d\n", current_char, line);
+        return -1;
         break;
     }
 
