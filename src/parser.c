@@ -8,7 +8,8 @@
 
 static struct token current_token;
 
-static struct ast_node *statements();
+static struct ast_node *statement();
+static struct ast_node *statements_block();
 static struct ast_node *expression();
 static struct ast_node *addition();
 static struct ast_node *multiplication();
@@ -18,7 +19,7 @@ static struct ast_node *mk_node(enum AST_NODE_TYPE, enum TOKEN_TYPE, struct ast_
 static struct ast_node *mk_leaf(enum AST_NODE_TYPE, enum TOKEN_TYPE, union token_literal);
 
 struct ast_node *ast_parse() {
-    return statements();
+    return statements_block();
 }
 
 void ast_clean(struct ast_node *expr) {
@@ -39,6 +40,11 @@ void ast_clean(struct ast_node *expr) {
 
 void ast_print(struct ast_node *expr, int level) {
     switch (expr->ast_node_type) {
+    case AST_GLUE:
+        ast_print(expr->left, level);
+        printf("\n");
+        ast_print(expr->right, level);
+        break;
     case AST_STMT:
         printf("[AST_STMT: ");
         if (expr->token_type == T_PRINT)
@@ -92,10 +98,21 @@ void ast_print(struct ast_node *expr, int level) {
     }
 }
 
-static struct ast_node *statements() {
+static struct ast_node *statements_block() {
+    struct ast_node *glue = statement();
+
+    struct ast_node *stmt;
+    while ((stmt = statement()) != NULL) {
+        glue = mk_node(AST_GLUE, 0, glue, stmt);
+    }
+
+    return glue;
+}
+
+static struct ast_node *statement() {
     if (lexical_scan(&current_token) == -1) {
         fprintf(stderr, "Expected a statement on line %d\n", current_token.line);
-        exit(1);
+        return NULL;
     }
     int              current_line = current_token.line;
     struct ast_node *stmt         = NULL;
