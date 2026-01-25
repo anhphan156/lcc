@@ -8,24 +8,27 @@
 
 static struct token current_token;
 
+static struct ast_node *statements();
+static struct ast_node *expression();
 static struct ast_node *addition();
 static struct ast_node *multiplication();
 static struct ast_node *primary();
 
 static struct ast_node *mk_node(enum AST_NODE_TYPE, enum TOKEN_TYPE, struct ast_node *, struct ast_node *);
-static struct ast_node *mk_leaf(enum AST_NODE_TYPE, enum TOKEN_TYPE, union token_literal, struct ast_node *, struct ast_node *);
+static struct ast_node *mk_leaf(enum AST_NODE_TYPE, enum TOKEN_TYPE, union token_literal);
 
 struct ast_node *ast_parse() {
-    struct ast_node *expr = addition();
-    return expr;
+    return statements();
 }
 
 void ast_clean(struct ast_node *expr) {
+    if (expr == NULL) {
+        return;
+    }
+
     struct ast_node *left  = expr->left;
     struct ast_node *right = expr->right;
-
-    if (expr)
-        free(expr);
+    free(expr);
 
     if (left)
         ast_clean(left);
@@ -36,6 +39,21 @@ void ast_clean(struct ast_node *expr) {
 
 void ast_print(struct ast_node *expr, int level) {
     switch (expr->ast_node_type) {
+    case AST_STMT:
+        printf("[AST_STMT: ");
+        if (expr->token_type == T_PRINT)
+            printf("(PRINT)");
+
+        printf("\n");
+        for (int i = 0; i < level; i++)
+            printf("\t");
+        ast_print(expr->left, level + 1);
+
+        printf("\n");
+        for (int i = 1; i < level; i++)
+            printf("\t");
+        printf("]");
+        break;
     case AST_BIN_OP:
         printf("[AST_BIN_OP: ");
         if (expr->token_type == T_PLUS)
@@ -69,9 +87,46 @@ void ast_print(struct ast_node *expr, int level) {
         printf("[AST_NUMBER (%f)]", expr->value.doubleval);
         break;
     default:
-        printf("ah");
+        printf("PRINT_AST: not implemented node\n");
         break;
     }
+}
+
+static struct ast_node *statements() {
+    if (lexical_scan(&current_token) == -1) {
+        fprintf(stderr, "Expected a statement on line %d\n", current_token.line);
+        exit(1);
+    }
+    int              current_line = current_token.line;
+    struct ast_node *stmt         = NULL;
+
+    switch (current_token.type) {
+    case T_PRINT: {
+        stmt = mk_node(AST_STMT, T_PRINT, expression(), NULL);
+
+        if (lexical_scan(&current_token) == -1) {
+            fprintf(stderr, "Expected a `;` on line %d\n", current_line);
+            exit(1);
+        }
+
+        if (current_token.type != T_SEMICOLON) {
+            fprintf(stderr, "Expected a `;` on line %d\n", current_line);
+            exit(1);
+        }
+
+        break;
+    }
+    default:
+        fprintf(stderr, "Unexpected token on line %d\n", current_token.line);
+        exit(1);
+        break;
+    }
+
+    return stmt;
+}
+
+static struct ast_node *expression() {
+    return addition();
 }
 
 static struct ast_node *addition() {
@@ -127,10 +182,10 @@ static struct ast_node *primary() {
 
     switch (current_token.type) {
     case T_INTLIT:
-        expr = mk_leaf(AST_INTEGER, current_token.type, current_token.value, NULL, NULL);
+        expr = mk_leaf(AST_INTEGER, current_token.type, current_token.value);
         break;
     case T_DOUBLELIT:
-        expr = mk_leaf(AST_DOUBLE, current_token.type, current_token.value, NULL, NULL);
+        expr = mk_leaf(AST_DOUBLE, current_token.type, current_token.value);
         break;
     default:
         printf("Unexpected token: %.*s on line %d\n", (int)current_token.lexeme_length, current_token.lexeme_start, current_token.line);
@@ -158,7 +213,7 @@ static struct ast_node *mk_node(enum AST_NODE_TYPE ast_node_type, enum TOKEN_TYP
 
     return node;
 }
-static struct ast_node *mk_leaf(enum AST_NODE_TYPE type, enum TOKEN_TYPE token_type, union token_literal value, struct ast_node *left, struct ast_node *right) {
+static struct ast_node *mk_leaf(enum AST_NODE_TYPE type, enum TOKEN_TYPE token_type, union token_literal value) {
     struct ast_node *node = (struct ast_node *)malloc(sizeof(struct ast_node));
     if (node == NULL) {
         fprintf(stderr, "Unable to create new ast_node");
@@ -168,8 +223,8 @@ static struct ast_node *mk_leaf(enum AST_NODE_TYPE type, enum TOKEN_TYPE token_t
     node->ast_node_type = type;
     node->token_type    = token_type;
     node->value         = value;
-    node->left          = left;
-    node->right         = right;
+    node->left          = NULL;
+    node->right         = NULL;
 
     return node;
 }

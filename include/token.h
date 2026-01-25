@@ -16,6 +16,9 @@ enum TOKEN_TYPE {
     T_INTLIT,
     T_DOUBLELIT,
     T_STRLIT,
+    T_SEMICOLON,
+    T_PRINT,
+    T_IDENTIFIER,
 };
 
 union token_literal {

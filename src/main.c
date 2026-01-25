@@ -22,6 +22,13 @@ int main(int argc, char **argv) {
 
     lexical_scanner_setup(src, src_len);
 
+    // struct token token;
+    // while (not_end()) {
+    //     if (lexical_scan(&token) != -1) {
+    //         printf("Token: %.*s on line %d\n", (int)token.lexeme_length, token.lexeme_start, token.line);
+    //     }
+    // }
+
     struct ast_node *expr = ast_parse();
     ast_print(expr, 1);
     generate_code(expr);

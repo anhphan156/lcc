@@ -16,11 +16,12 @@ static int  reg_alloc(void);
 static void reg_free(int);
 static void reg_free_all(void);
 
-static int ast_walker(struct ast_node *);
-static int cg_load(int);
-static int cg_add(int, int);
-static int cg_sub(int, int);
-static int cg_mul(int, int);
+static int  ast_walker(struct ast_node *);
+static void cg_print(int);
+static int  cg_load(int);
+static int  cg_add(int, int);
+static int  cg_sub(int, int);
+static int  cg_mul(int, int);
 
 void generate_code(struct ast_node *node) {
     asm_stream = fopen("./code.s", "w");
@@ -37,17 +38,11 @@ void generate_code(struct ast_node *node) {
                         "push %%rbp\n"
                         "mov %%rsp, %%rbp\n");
 
-    int reg = ast_walker(node);
+    ast_walker(node);
 
-    fprintf(asm_stream,
-            "leaq str(%%rip), %%rdi\n"
-            "movq %s, %%rsi\n"
-            "xor %%rax, %%rax\n"
-            "call printf\n"
-            "leave \n"
-            "mov $0, %%rax\n"
-            "ret\n",
-            registers_list[reg]);
+    fprintf(asm_stream, "leave \n"
+                        "xor %%rax, %%rax\n"
+                        "ret\n");
     fclose(asm_stream);
 }
 
@@ -77,6 +72,17 @@ static int ast_walker(struct ast_node *node) {
 
     if (node->ast_node_type == AST_INTEGER) {
         return cg_load(node->value.intval);
+    }
+
+    if (node->ast_node_type == AST_STMT) {
+        switch (node->token_type) {
+        case T_PRINT:
+            cg_print(left_reg);
+            reg_free_all();
+            break;
+        default:
+            break;
+        }
     }
 
     return -1;
@@ -125,6 +131,18 @@ static int cg_mul(int r1, int r2) {
     reg_free(r1);
 
     return r2;
+}
+
+static void cg_print(int reg) {
+    if (asm_stream == NULL)
+        return;
+
+    fprintf(asm_stream,
+            "leaq str(%%rip), %%rdi\n"
+            "movq %s, %%rsi\n"
+            "xor %%rax, %%rax\n"
+            "call printf\n",
+            registers_list[reg]);
 }
 
 static int cg_load(int v) {

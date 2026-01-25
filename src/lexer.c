@@ -1,6 +1,7 @@
 #include "lexer.h"
 #include "breakpoint.h"
 #include "token.h"
+#include <ctype.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,8 +21,10 @@ static void add_token(const enum TOKEN_TYPE);
 static void add_int_token(const enum TOKEN_TYPE);
 static void add_double_token(const enum TOKEN_TYPE);
 static char peek();
+static char peek_previous();
 static void advance();
 static void parse_number();
+static void parse_identifier();
 
 int8_t lexical_scan(struct token *token) {
     if (!not_end())
@@ -35,11 +38,6 @@ scan:
     token_start       = cur;
     char current_char = peek();
     advance();
-
-    if (current_char <= '9' && current_char >= '0') {
-        parse_number();
-        return 0;
-    }
 
     switch (current_char) {
     case 0xA: // newline
@@ -62,11 +60,21 @@ scan:
     case '/':
         add_token(T_SLASH);
         break;
-
-    default:
-        printf("Unrecognized token %x on line %d\n", current_char, line);
-        return -1;
+    case ';':
+        add_token(T_SEMICOLON);
         break;
+
+    default: {
+        if (current_char <= '9' && current_char >= '0') {
+            parse_number();
+            return 0;
+        }
+
+        if (isalpha(current_char) || current_char == '_') {
+            parse_identifier();
+            return 0;
+        }
+    }
     }
 
     return 0;
@@ -92,6 +100,14 @@ static char peek() {
     }
 
     return source[cur];
+}
+
+static char peek_previous() {
+    if (old_cur >= source_len || old_cur < 0) {
+        return 0x0;
+    }
+
+    return source[old_cur];
 }
 
 static void advance() {
@@ -168,4 +184,37 @@ static void parse_number() {
     }
 
     add_int_token(T_INTLIT);
+}
+
+static void parse_identifier() {
+    char first_char = peek_previous();
+    char current_char;
+
+    do {
+        advance();
+        current_char = peek();
+    } while (isalpha(current_char));
+
+    switch (first_char) {
+    case 'p': {
+        size_t len    = cur - token_start;
+        char  *lexeme = (char *)malloc(len + 1);
+        if (lexeme == NULL) {
+            BREAKPOINT;
+            fprintf(stderr, "Failed to allocate memory for lexeme\n");
+            exit(1);
+        }
+        memcpy(lexeme, source + token_start, len);
+        lexeme[len] = 0;
+
+        if (!strcmp(lexeme, "print")) {
+            add_token(T_PRINT);
+        }
+        free(lexeme);
+        break;
+    }
+    default:
+        add_token(T_IDENTIFIER);
+        break;
+    }
 }
