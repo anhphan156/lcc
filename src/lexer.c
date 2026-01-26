@@ -196,7 +196,7 @@ static void parse_identifier() {
     } while (isalpha(current_char));
 
     switch (first_char) {
-    case 'p': {
+    case 's': {
         size_t len    = cur - token_start;
         char  *lexeme = (char *)malloc(len + 1);
         if (lexeme == NULL) {
@@ -207,8 +207,8 @@ static void parse_identifier() {
         memcpy(lexeme, source + token_start, len);
         lexeme[len] = 0;
 
-        if (!strcmp(lexeme, "print")) {
-            add_token(T_PRINT);
+        if (!strcmp(lexeme, "scribe")) {
+            add_token(T_SCRIBE);
         }
         free(lexeme);
         break;

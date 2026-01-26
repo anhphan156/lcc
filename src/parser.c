@@ -47,7 +47,7 @@ void ast_print(struct ast_node *expr, int level) {
         break;
     case AST_STMT:
         printf("[AST_STMT: ");
-        if (expr->token_type == T_PRINT)
+        if (expr->token_type == T_SCRIBE)
             printf("(PRINT)");
 
         printf("\n");
@@ -118,8 +118,8 @@ static struct ast_node *statement() {
     struct ast_node *stmt         = NULL;
 
     switch (current_token.type) {
-    case T_PRINT: {
-        stmt = mk_node(AST_STMT, T_PRINT, expression(), NULL);
+    case T_SCRIBE: {
+        stmt = mk_node(AST_STMT, T_SCRIBE, expression(), NULL);
 
         if (lexical_scan(&current_token) == -1) {
             fprintf(stderr, "Expected a `;` on line %d\n", current_line);

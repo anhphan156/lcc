@@ -17,7 +17,7 @@ enum TOKEN_TYPE {
     T_DOUBLELIT,
     T_STRLIT,
     T_SEMICOLON,
-    T_PRINT,
+    T_SCRIBE,
     T_IDENTIFIER,
 };
 

@@ -76,7 +76,7 @@ static int ast_walker(struct ast_node *node) {
 
     if (node->ast_node_type == AST_STMT) {
         switch (node->token_type) {
-        case T_PRINT:
+        case T_SCRIBE:
             cg_print(left_reg);
             reg_free_all();
             break;
