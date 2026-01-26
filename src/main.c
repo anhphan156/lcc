@@ -1,3 +1,4 @@
+#include "ast/ast_visualizer.h"
 #include "codegen.h"
 #include "lexer.h"
 #include "parser.h"
@@ -31,6 +32,7 @@ int main(int argc, char **argv) {
 
     struct ast_node *expr = ast_parse();
     ast_print(expr, 1);
+    write_dot_graph(expr);
     generate_code(expr);
     ast_clean(expr);
 

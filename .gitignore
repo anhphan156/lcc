@@ -4,3 +4,4 @@
 config.lua
 .gdb_history
 core
+output.svg

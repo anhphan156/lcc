@@ -16,6 +16,7 @@
         llvmPackages.clang-tools
         valgrind
         gdb
+        graphviz
       ];
     };
   };

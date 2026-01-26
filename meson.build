@@ -10,6 +10,7 @@ exe = executable(
   'src/lexer.c',
   'src/parser.c',
   'src/codegen.c',
+  'src/ast_visualizer.c',
   include_directories: 'include',
   install: true,
 )
