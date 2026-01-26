@@ -2,8 +2,12 @@
 #include "ast/ast.h"
 #include "lexer.h"
 #include "parser/expression.h"
+#include "token.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+static struct ast_node *statement();
+static struct ast_node *print_statement();
 
 struct ast_node *statements_block() {
     struct ast_node *block = statement();
@@ -16,36 +20,27 @@ struct ast_node *statements_block() {
     return block;
 }
 
-struct ast_node *statement() {
-    struct token current_token;
-    if (lexical_scan(&current_token) == -1) {
-        // EOF
+static struct ast_node *statement() {
+    if (match(T_EOF)) {
         return NULL;
     }
 
-    int              current_line = current_token.line;
-    struct ast_node *stmt         = NULL;
-
-    switch (current_token.type) {
-    case T_SCRIBE: {
-        stmt = mk_node(AST_STMT, T_SCRIBE, expression(), NULL);
-
-        if (lexical_scan(&current_token) == -1) {
-            fprintf(stderr, "Expected a `;` on line %d\n", current_line);
-            exit(1);
-        }
-
-        if (current_token.type != T_SEMICOLON) {
-            fprintf(stderr, "Expected a `;` on line %d\n", current_line);
-            exit(1);
-        }
-
-        break;
+    if (match(T_SCRIBE)) {
+        return print_statement();
     }
-    default:
-        fprintf(stderr, "Unexpected token on line %d\n", current_token.line);
+
+    fprintf(stderr, "Unexpected statement\n");
+
+    return NULL;
+}
+
+static struct ast_node *print_statement() {
+    struct ast_node *stmt = mk_node(AST_STMT, T_SCRIBE, expression(), NULL);
+
+    if (!match(T_SEMICOLON)) {
+        struct token current_token = get_current_token();
+        fprintf(stderr, "Expected a `;` on line %d\n", current_token.line);
         exit(1);
-        break;
     }
 
     return stmt;

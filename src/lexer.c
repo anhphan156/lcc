@@ -7,31 +7,36 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const char   *source      = 0;
-static size_t        source_len  = 0;
-static uint32_t      token_start = 0;
-static uint32_t      cur         = 0;
-static uint32_t      line        = 1;
-static struct token *_token      = NULL;
+static const char *source      = 0;
+static size_t      source_len  = 0;
+static uint32_t    token_start = 0;
+static uint32_t    cur         = 0;
+static uint32_t    line        = 1;
+
+static struct token current_token;
 
 static uint32_t old_token_start = 0;
 static uint32_t old_cur         = 0;
 
-static void add_token(const enum TOKEN_TYPE);
-static void add_int_token(const enum TOKEN_TYPE);
-static void add_double_token(const enum TOKEN_TYPE);
-static char peek();
-static char peek_previous();
-static void advance();
-static void parse_number();
-static void parse_identifier();
+static void   add_token(const enum TOKEN_TYPE);
+static void   add_int_token(const enum TOKEN_TYPE);
+static void   add_double_token(const enum TOKEN_TYPE);
+static char   peek();
+static char   peek_previous();
+static void   advance();
+static void   parse_number();
+static void   parse_identifier();
+static bool   is_eof();
+static int8_t lexical_scan();
+static void   lexical_go_back();
 
-int8_t lexical_scan(struct token *token) {
-    if (!not_end())
-        return -1;
-
-    _token = token;
+int8_t lexical_scan() {
 scan:
+    if (is_eof()) {
+        current_token.type = T_EOF;
+        return -1;
+    }
+
     old_token_start = token_start;
     old_cur         = cur;
 
@@ -42,11 +47,8 @@ scan:
     switch (current_char) {
     case 0xA: // newline
         line += 1;
-    case 0x20: // space
-    case 0x9:  // tab
-        if (!not_end()) {
-            return -1;
-        }
+    case 0x20:     // space
+    case 0x9:      // tab
         goto scan; // skip all whitespaces and scan again for the next token
     case '+':
         add_token(T_PLUS);
@@ -80,7 +82,20 @@ scan:
     return 0;
 }
 
-void lexical_go_back() {
+bool match(enum TOKEN_TYPE token_type) {
+    lexical_scan();
+    if (current_token.type == token_type) {
+        return true;
+    }
+    lexical_go_back();
+    return false;
+}
+
+struct token get_current_token() {
+    return current_token;
+}
+
+static void lexical_go_back() {
     token_start = old_token_start;
     cur         = old_cur;
 }
@@ -90,8 +105,8 @@ void lexical_scanner_setup(const char *input, size_t input_len) {
     source_len = input_len;
 }
 
-bool not_end() {
-    return cur < source_len;
+bool is_eof() {
+    return cur >= source_len;
 }
 
 static char peek() {
@@ -115,21 +130,13 @@ static void advance() {
 }
 
 static void add_token(const enum TOKEN_TYPE type) {
-    if (_token == NULL) {
-        BREAKPOINT;
-    }
-
-    _token->type          = type;
-    _token->line          = line;
-    _token->lexeme_start  = source + token_start;
-    _token->lexeme_length = cur - token_start;
+    current_token.type          = type;
+    current_token.line          = line;
+    current_token.lexeme_start  = source + token_start;
+    current_token.lexeme_length = cur - token_start;
 }
 
 static void add_int_token(const enum TOKEN_TYPE type) {
-    if (_token == NULL) {
-        BREAKPOINT;
-    }
-
     size_t lexeme_len = cur - token_start;
     char  *lexeme_str = (char *)malloc(lexeme_len + 1);
     memcpy(lexeme_str, source + token_start, lexeme_len);
@@ -138,18 +145,14 @@ static void add_int_token(const enum TOKEN_TYPE type) {
     int64_t value = atoi(lexeme_str);
     free(lexeme_str);
 
-    _token->value.intval  = value;
-    _token->line          = line;
-    _token->type          = type;
-    _token->lexeme_start  = source + token_start;
-    _token->lexeme_length = cur - token_start;
+    current_token.value.intval  = value;
+    current_token.line          = line;
+    current_token.type          = type;
+    current_token.lexeme_start  = source + token_start;
+    current_token.lexeme_length = cur - token_start;
 }
 
 static void add_double_token(const enum TOKEN_TYPE type) {
-    if (_token == NULL) {
-        BREAKPOINT;
-    }
-
     size_t lexeme_len = cur - token_start;
     char  *lexeme_str = (char *)malloc(lexeme_len + 1);
     memcpy(lexeme_str, source + token_start, lexeme_len);
@@ -158,11 +161,11 @@ static void add_double_token(const enum TOKEN_TYPE type) {
     double value = strtod(lexeme_str, NULL);
     free(lexeme_str);
 
-    _token->value.doubleval = value;
-    _token->line            = line;
-    _token->type            = type;
-    _token->lexeme_start    = source + token_start;
-    _token->lexeme_length   = cur - token_start;
+    current_token.value.doubleval = value;
+    current_token.line            = line;
+    current_token.type            = type;
+    current_token.lexeme_start    = source + token_start;
+    current_token.lexeme_length   = cur - token_start;
 }
 
 static void parse_number() {

@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 enum TOKEN_TYPE {
+    T_EOF,
     T_PLUS,
     T_MINUS,
     T_STAR,
