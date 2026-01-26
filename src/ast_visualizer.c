@@ -31,8 +31,8 @@ static uint32_t ast_walker(struct ast_node *node) {
         right_id = ast_walker(node->right);
     }
 
-    if (node->ast_node_type == AST_GLUE) {
-        fprintf(dot_file, "%d [label = glue];", node_id);
+    if (node->ast_node_type == AST_STMTS_BLOCK) {
+        fprintf(dot_file, "%d [label = stmts_block];", node_id);
     }
 
     if (node->ast_node_type == AST_STMT) {
@@ -43,13 +43,13 @@ static uint32_t ast_walker(struct ast_node *node) {
 
     if (node->ast_node_type == AST_BIN_OP) {
         if (node->token_type == T_PLUS)
-            fprintf(dot_file, "%d [label = add];", node_id);
+            fprintf(dot_file, "%d [label = \"+\"];", node_id);
         if (node->token_type == T_MINUS)
-            fprintf(dot_file, "%d [label = minus];", node_id);
+            fprintf(dot_file, "%d [label = \"-\"];", node_id);
         if (node->token_type == T_STAR)
-            fprintf(dot_file, "%d [label = multiply];", node_id);
+            fprintf(dot_file, "%d [label = \"*\"];", node_id);
         if (node->token_type == T_SLASH)
-            fprintf(dot_file, "%d [label = divide];", node_id);
+            fprintf(dot_file, "%d [label = \"/\"];", node_id);
     }
 
     if (node->ast_node_type == AST_INTEGER) {

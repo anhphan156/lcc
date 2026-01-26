@@ -39,7 +39,7 @@ void ast_clean(struct ast_node *expr) {
 
 void ast_print(struct ast_node *expr, int level) {
     switch (expr->ast_node_type) {
-    case AST_GLUE:
+    case AST_STMTS_BLOCK:
         ast_print(expr->left, level);
         printf("\n");
         ast_print(expr->right, level);
@@ -98,14 +98,14 @@ void ast_print(struct ast_node *expr, int level) {
 }
 
 static struct ast_node *statements_block() {
-    struct ast_node *glue = statement();
+    struct ast_node *block = statement();
 
     struct ast_node *stmt;
     while ((stmt = statement()) != NULL) {
-        glue = mk_node(AST_GLUE, 0, glue, stmt);
+        block = mk_node(AST_STMTS_BLOCK, 0, block, stmt);
     }
 
-    return glue;
+    return block;
 }
 
 static struct ast_node *statement() {
