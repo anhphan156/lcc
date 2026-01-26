@@ -4,7 +4,7 @@ if get_option('buildtype') == 'debug'
   add_project_arguments('-DDEBUG_BUILD', language: 'c')
 endif
 
-exe = executable(
+lcc = executable(
   'lcc', 
   'src/main.c',
   'src/lexer.c',
@@ -18,14 +18,30 @@ exe = executable(
   install: true,
 )
 
-run_input = '../test_input/00'
+lc_code = '../test_input/00'
+
+generated_binary = custom_target(
+  'generated_exe',
+  output: 'out',
+  command: [
+    lcc,
+    lc_code,
+    '@OUTPUT@'
+  ]
+)
+
 
 run_target(
   'run', 
   command: [
-    exe,
-    run_input
+    lcc,
+    lc_code
   ]
+)
+
+run_target(
+  'run_test',
+  command: [generated_binary],
 )
 
 run_target(
@@ -34,7 +50,7 @@ run_target(
     'valgrind',
     '--leak-check=full',
     '-s',
-    exe,
-    run_input
+    lcc,
+    lc_code
   ]
 )
