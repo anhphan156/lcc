@@ -1,7 +1,7 @@
 #include "ast/ast_visualizer.h"
 #include "codegen.h"
 #include "lexer.h"
-#include "parser.h"
+#include "parser/parser.h"
 #include "sys/types.h"
 #include "token.h"
 #include <fcntl.h>
@@ -38,17 +38,17 @@ int main(int argc, char **argv) {
 
     close_file(src, src_len);
 
-    pid_t pid = fork();
-    if (pid == -1) {
-        perror("fork");
-        goto main_end;
-    } else if (pid == 0) {
-        int ret = execlp("gcc", "gcc", "-o", "out", "code.s", NULL);
-        if (ret == -1) {
-            perror("execvl");
-            goto main_end;
-        }
-    }
+    // pid_t pid = fork();
+    // if (pid == -1) {
+    //     perror("fork");
+    //     goto main_end;
+    // } else if (pid == 0) {
+    //     int ret = execlp("gcc", "gcc", "-o", "out", "code.s", NULL);
+    //     if (ret == -1) {
+    //         perror("execvl");
+    //         goto main_end;
+    //     }
+    // }
 
 main_end:
     return 0;

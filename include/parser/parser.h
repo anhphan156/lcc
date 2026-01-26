@@ -5,7 +5,6 @@
 
 struct ast_node *ast_parse();
 void             ast_clean(struct ast_node *);
-
-void ast_print(struct ast_node *, int level);
+void             ast_print(struct ast_node *, int level);
 
 #endif

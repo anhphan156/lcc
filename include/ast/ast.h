@@ -12,4 +12,7 @@ struct ast_node {
     enum TOKEN_TYPE     token_type;
 };
 
+struct ast_node *mk_node(enum AST_NODE_TYPE, enum TOKEN_TYPE, struct ast_node *, struct ast_node *);
+struct ast_node *mk_leaf(enum AST_NODE_TYPE, enum TOKEN_TYPE, union token_literal);
+
 #endif

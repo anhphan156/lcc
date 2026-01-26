@@ -8,9 +8,12 @@ exe = executable(
   'lcc', 
   'src/main.c',
   'src/lexer.c',
-  'src/parser.c',
   'src/codegen.c',
-  'src/ast_visualizer.c',
+  'src/parser/parser.c',
+  'src/parser/expression.c',
+  'src/parser/statement.c',
+  'src/ast/ast_visualizer.c',
+  'src/ast/ast.c',
   include_directories: 'include',
   install: true,
 )
@@ -30,6 +33,7 @@ run_target(
   command: [
     'valgrind',
     '--leak-check=full',
+    '-s',
     exe,
     run_input
   ]
