@@ -4,7 +4,7 @@
 #include "parser/parser.h"
 #include "symbol_table.h"
 #include "sys/types.h"
-#include "token.h"
+#include "sys/wait.h"
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,33 +23,27 @@ int main(int argc, char **argv) {
     char  *src     = read_file(src_file_path, &src_len);
 
     lexical_scanner_setup(src, src_len);
-
-    // struct token token;
-    // while (not_end()) {
-    //     if (lexical_scan(&token) != -1) {
-    //         printf("Token: %.*s on line %d\n", (int)token.lexeme_length, token.lexeme_start, token.line);
-    //     }
-    // }
-
     struct ast_node *expr = ast_parse();
-    // ast_print(expr, 1);
     write_dot_graph(expr);
-    // generate_code(expr);
+    generate_code(expr);
     ast_clean(expr);
     clean_symbol_table();
     close_file(src, src_len);
 
-    // pid_t pid = fork();
-    // if (pid == -1) {
-    //     perror("fork");
-    //     goto main_end;
-    // } else if (pid == 0) {
-    //     int ret = execlp("gcc", "gcc", "-o", "out", "code.s", NULL);
-    //     if (ret == -1) {
-    //         perror("execvl");
-    //         goto main_end;
-    //     }
-    // }
+    pid_t pid = fork();
+    if (pid == -1) {
+        perror("fork");
+        goto main_end;
+    } else if (pid == 0) {
+        int ret = execlp("gcc", "gcc", "-o", "out", "code.s", NULL);
+        if (ret == -1) {
+            perror("execvl");
+            goto main_end;
+        }
+    }
+
+    int status;
+    waitpid(pid, &status, 0);
 
 main_end:
     return 0;

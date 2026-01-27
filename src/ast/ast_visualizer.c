@@ -49,7 +49,7 @@ static uint32_t ast_walker(struct ast_node *node) {
     }
 
     if (node->ast_node_type == AST_IDENTIFIER) {
-        fprintf(dot_file, "%d [label = %d];", node_id, node->value.id);
+        fprintf(dot_file, "%d [label = \"sym[%d]\"];", node_id, node->value.id);
     }
 
     if (node->ast_node_type == AST_BIN_OP) {

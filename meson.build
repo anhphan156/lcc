@@ -19,7 +19,7 @@ lcc = executable(
   install: true,
 )
 
-lc_code = '../test_input/00'
+lc_code = '../tests/input_00'
 
 generated_binary = custom_target(
   'generated_exe',
@@ -31,6 +31,23 @@ generated_binary = custom_target(
   ]
 )
 
+foreach t : [
+  ['test1', 'input_01', 'expected_01'],
+  ['test2', 'input_02', 'expected_02'],
+  ['test3', 'input_03', 'expected_03'],
+]
+test(
+  t[0],
+  find_program('./tests/compare.sh'),
+  args: [
+    lcc,
+    meson.current_build_dir(),
+    files('./tests/' + t[1]),
+    files('./tests/' + t[2]),
+  ],
+  is_parallel: false
+)
+endforeach
 
 run_target(
   'run', 
@@ -41,7 +58,7 @@ run_target(
 )
 
 run_target(
-  'run_test',
+  'manual_test',
   command: [generated_binary],
 )
 
