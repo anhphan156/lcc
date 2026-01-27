@@ -39,6 +39,17 @@ static uint32_t ast_walker(struct ast_node *node) {
         if (node->token_type == T_SCRIBE) {
             fprintf(dot_file, "%d [label = scribe];", node_id);
         }
+        if (node->token_type == T_INT) {
+            fprintf(dot_file, "%d [label = int];", node_id);
+        }
+
+        if (node->token_type == T_EQ) {
+            fprintf(dot_file, "%d [label = \"=\"];", node_id);
+        }
+    }
+
+    if (node->ast_node_type == AST_IDENTIFIER) {
+        fprintf(dot_file, "%d [label = %d];", node_id, node->value.id);
     }
 
     if (node->ast_node_type == AST_BIN_OP) {

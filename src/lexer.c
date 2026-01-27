@@ -1,5 +1,5 @@
 #include "lexer.h"
-#include "breakpoint.h"
+#include "symbol_table.h"
 #include "token.h"
 #include <ctype.h>
 #include <stdint.h>
@@ -14,31 +14,26 @@ static uint32_t    cur         = 0;
 static uint32_t    line        = 1;
 
 static struct token current_token;
-
-static uint32_t old_token_start = 0;
-static uint32_t old_cur         = 0;
+static struct token previous_token;
 
 static void   add_token(const enum TOKEN_TYPE);
 static void   add_int_token(const enum TOKEN_TYPE);
 static void   add_double_token(const enum TOKEN_TYPE);
+static bool   add_keyword(const enum TOKEN_TYPE, const char *);
+static void   add_identifier();
 static char   peek();
-static char   peek_previous();
 static void   advance();
 static void   parse_number();
-static void   parse_identifier();
+static void   parse_identifier(char);
 static bool   is_eof();
-static int8_t lexical_scan();
-static void   lexical_go_back();
+static int8_t lexical_next();
 
-int8_t lexical_scan() {
+int8_t lexical_next() {
 scan:
     if (is_eof()) {
         current_token.type = T_EOF;
         return -1;
     }
-
-    old_token_start = token_start;
-    old_cur         = cur;
 
     token_start       = cur;
     char current_char = peek();
@@ -65,6 +60,9 @@ scan:
     case ';':
         add_token(T_SEMICOLON);
         break;
+    case '=':
+        add_token(T_EQ);
+        break;
 
     default: {
         if (current_char <= '9' && current_char >= '0') {
@@ -73,9 +71,12 @@ scan:
         }
 
         if (isalpha(current_char) || current_char == '_') {
-            parse_identifier();
+            parse_identifier(current_char);
             return 0;
         }
+
+        fprintf(stderr, "Unrecognized token %c on line %d\n", current_char, line);
+        exit(1);
     }
     }
 
@@ -83,11 +84,11 @@ scan:
 }
 
 bool match(enum TOKEN_TYPE token_type) {
-    lexical_scan();
     if (current_token.type == token_type) {
+        previous_token = current_token;
+        lexical_next();
         return true;
     }
-    lexical_go_back();
     return false;
 }
 
@@ -95,14 +96,14 @@ struct token get_current_token() {
     return current_token;
 }
 
-static void lexical_go_back() {
-    token_start = old_token_start;
-    cur         = old_cur;
+struct token get_previous_token() {
+    return previous_token;
 }
 
 void lexical_scanner_setup(const char *input, size_t input_len) {
     source     = input;
     source_len = input_len;
+    lexical_next(); // scan once on startup so the current_token becomes the first token
 }
 
 bool is_eof() {
@@ -117,14 +118,6 @@ static char peek() {
     return source[cur];
 }
 
-static char peek_previous() {
-    if (old_cur >= source_len || old_cur < 0) {
-        return 0x0;
-    }
-
-    return source[old_cur];
-}
-
 static void advance() {
     cur += 1;
 }
@@ -137,35 +130,47 @@ static void add_token(const enum TOKEN_TYPE type) {
 }
 
 static void add_int_token(const enum TOKEN_TYPE type) {
-    size_t lexeme_len = cur - token_start;
-    char  *lexeme_str = (char *)malloc(lexeme_len + 1);
-    memcpy(lexeme_str, source + token_start, lexeme_len);
-    lexeme_str[lexeme_len] = 0;
-
-    int64_t value = atoi(lexeme_str);
-    free(lexeme_str);
-
+    char   *lexeme_str          = strndup(source + token_start, cur - token_start);
+    int64_t value               = atoi(lexeme_str);
     current_token.value.intval  = value;
     current_token.line          = line;
     current_token.type          = type;
     current_token.lexeme_start  = source + token_start;
     current_token.lexeme_length = cur - token_start;
+    free(lexeme_str);
 }
 
 static void add_double_token(const enum TOKEN_TYPE type) {
-    size_t lexeme_len = cur - token_start;
-    char  *lexeme_str = (char *)malloc(lexeme_len + 1);
-    memcpy(lexeme_str, source + token_start, lexeme_len);
-    lexeme_str[lexeme_len] = 0;
-
-    double value = strtod(lexeme_str, NULL);
-    free(lexeme_str);
-
+    char  *lexeme_str             = strndup(source + token_start, cur - token_start);
+    double value                  = strtod(lexeme_str, NULL);
     current_token.value.doubleval = value;
     current_token.line            = line;
     current_token.type            = type;
     current_token.lexeme_start    = source + token_start;
     current_token.lexeme_length   = cur - token_start;
+    free(lexeme_str);
+}
+
+static void add_identifier() {
+    char *name                  = strndup(source + token_start, cur - token_start);
+    current_token.value.id      = add_symbol(name);
+    current_token.line          = line;
+    current_token.type          = T_IDENTIFIER;
+    current_token.lexeme_start  = source + token_start;
+    current_token.lexeme_length = cur - token_start;
+    free(name);
+}
+
+static bool add_keyword(const enum TOKEN_TYPE token_type, const char *keyword) {
+    char *lexeme = strdup(keyword);
+
+    bool valid_keyword = false;
+    if (!strcmp(lexeme, keyword)) {
+        add_token(token_type);
+        valid_keyword = true;
+    }
+    free(lexeme);
+    return valid_keyword;
 }
 
 static void parse_number() {
@@ -189,35 +194,27 @@ static void parse_number() {
     add_int_token(T_INTLIT);
 }
 
-static void parse_identifier() {
-    char first_char = peek_previous();
-    char current_char;
+static void parse_identifier(char first_char) {
+    char current_char = peek();
 
-    do {
-        advance();
+    while (isalpha(current_char)) {
         current_char = peek();
-    } while (isalpha(current_char));
+        advance();
+    }
 
+    bool valid_keyword = false;
     switch (first_char) {
-    case 's': {
-        size_t len    = cur - token_start;
-        char  *lexeme = (char *)malloc(len + 1);
-        if (lexeme == NULL) {
-            BREAKPOINT;
-            fprintf(stderr, "Failed to allocate memory for lexeme\n");
-            exit(1);
-        }
-        memcpy(lexeme, source + token_start, len);
-        lexeme[len] = 0;
-
-        if (!strcmp(lexeme, "scribe")) {
-            add_token(T_SCRIBE);
-        }
-        free(lexeme);
+    case 'i':
+        valid_keyword = add_keyword(T_INT, "int");
+        break;
+    case 's':
+        valid_keyword = add_keyword(T_SCRIBE, "scribe");
+        break;
+    default:
         break;
     }
-    default:
-        add_token(T_IDENTIFIER);
-        break;
+
+    if (!valid_keyword) {
+        add_identifier();
     }
 }

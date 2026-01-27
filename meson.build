@@ -9,6 +9,7 @@ lcc = executable(
   'src/main.c',
   'src/lexer.c',
   'src/codegen.c',
+  'src/symbol_table.c',
   'src/parser/parser.c',
   'src/parser/expression.c',
   'src/parser/statement.c',

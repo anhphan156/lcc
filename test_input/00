@@ -1,3 +1,5 @@
-scribe 10 * 29 - 99 * 9;
-scribe 1 * 2 - 3 + 4 - 5;
-scribe 5 - 29 - 29 * 3;
+int a;
+int b;
+a = 4 * 2 - 1;
+b = 22 + 2 * 19;
+scribe 23 + 12 * a * b;

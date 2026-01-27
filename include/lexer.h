@@ -9,5 +9,6 @@ void lexical_scanner_setup(const char *, size_t);
 
 bool         match(enum TOKEN_TYPE);
 struct token get_current_token();
+struct token get_previous_token();
 
 #endif

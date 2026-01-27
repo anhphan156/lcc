@@ -2,6 +2,7 @@
 #include "codegen.h"
 #include "lexer.h"
 #include "parser/parser.h"
+#include "symbol_table.h"
 #include "sys/types.h"
 #include "token.h"
 #include <fcntl.h>
@@ -31,24 +32,24 @@ int main(int argc, char **argv) {
     // }
 
     struct ast_node *expr = ast_parse();
-    ast_print(expr, 1);
+    // ast_print(expr, 1);
     write_dot_graph(expr);
-    generate_code(expr);
+    // generate_code(expr);
     ast_clean(expr);
-
+    clean_symbol_table();
     close_file(src, src_len);
 
-    pid_t pid = fork();
-    if (pid == -1) {
-        perror("fork");
-        goto main_end;
-    } else if (pid == 0) {
-        int ret = execlp("gcc", "gcc", "-o", "out", "code.s", NULL);
-        if (ret == -1) {
-            perror("execvl");
-            goto main_end;
-        }
-    }
+    // pid_t pid = fork();
+    // if (pid == -1) {
+    //     perror("fork");
+    //     goto main_end;
+    // } else if (pid == 0) {
+    //     int ret = execlp("gcc", "gcc", "-o", "out", "code.s", NULL);
+    //     if (ret == -1) {
+    //         perror("execvl");
+    //         goto main_end;
+    //     }
+    // }
 
 main_end:
     return 0;
