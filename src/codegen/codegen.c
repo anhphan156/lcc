@@ -53,6 +53,16 @@ static int ast_walker(struct ast_node *node, int in_reg) {
         }
     }
 
+    if (node->ast_node_type == AST_UN_OP) {
+        switch (node->token_type) {
+        case T_MINUS:
+            return cg_neg(left_reg);
+            break;
+        default:
+            break;
+        }
+    }
+
     if (node->ast_node_type == AST_INTEGER) {
         return cg_load(node->value.intval);
     }

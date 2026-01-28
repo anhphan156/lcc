@@ -12,6 +12,7 @@
     X(T_SLASH)      \
     X(T_EQ)         \
     X(T_EQEQ)       \
+    X(T_NOT)        \
     X(T_LPAREN)     \
     X(T_RPAREN)     \
     X(T_INTLIT)     \

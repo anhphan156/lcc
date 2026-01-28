@@ -59,13 +59,19 @@ static uint32_t ast_walker(struct ast_node *node) {
 
     if (node->ast_node_type == AST_BIN_OP) {
         if (node->token_type == T_PLUS)
-            fprintf(dot_file, "%d [label = \"+\"];", node_id);
+            fprintf(dot_file, "%d [label = \"bin[+]\"];", node_id);
         if (node->token_type == T_MINUS)
-            fprintf(dot_file, "%d [label = \"-\"];", node_id);
+            fprintf(dot_file, "%d [label = \"bin[-]\"];", node_id);
         if (node->token_type == T_STAR)
-            fprintf(dot_file, "%d [label = \"*\"];", node_id);
+            fprintf(dot_file, "%d [label = \"bin[*]\"];", node_id);
         if (node->token_type == T_SLASH)
-            fprintf(dot_file, "%d [label = \"/\"];", node_id);
+            fprintf(dot_file, "%d [label = \"bin[/]\"];", node_id);
+    }
+    if (node->ast_node_type == AST_UN_OP) {
+        if (node->token_type == T_MINUS)
+            fprintf(dot_file, "%d [label = \"un[-]\"];", node_id);
+        if (node->token_type == T_NOT)
+            fprintf(dot_file, "%d [label = \"un[!]\"];", node_id);
     }
 
     if (node->ast_node_type == AST_INTEGER) {

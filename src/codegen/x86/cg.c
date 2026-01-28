@@ -86,6 +86,20 @@ int cg_mul(int r1, int r2) {
     return r2;
 }
 
+int cg_neg(int reg) {
+    FILE *asm_stream = asmfget();
+    if (asm_stream == NULL)
+        return -1;
+
+    if (reg == -1) {
+        fprintf(stderr, "cg_op negative register location\n");
+        BREAKPOINT;
+    }
+
+    fprintf(asm_stream, "neg %s\n", registers_list[reg]);
+    return reg;
+}
+
 void cg_print(int reg) {
     FILE *asm_stream = asmfget();
     if (asm_stream == NULL)

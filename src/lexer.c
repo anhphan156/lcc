@@ -57,6 +57,9 @@ scan:
     case '/':
         add_token(T_SLASH);
         break;
+    case '!':
+        add_token(T_NOT);
+        break;
     case ';':
         add_token(T_SEMICOLON);
         break;

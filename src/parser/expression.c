@@ -7,6 +7,7 @@
 
 static struct ast_node *addition();
 static struct ast_node *multiplication();
+static struct ast_node *unary();
 static struct ast_node *primary();
 
 struct ast_node *expression() {
@@ -26,15 +27,25 @@ static struct ast_node *addition() {
 }
 
 static struct ast_node *multiplication() {
-    struct ast_node *expr = primary();
+    struct ast_node *expr = unary();
 
     while (match(T_STAR) || match(T_SLASH)) {
         struct token     previous_token = get_previous_token();
         struct ast_node *left           = expr;
-        expr                            = mk_node(AST_BIN_OP, previous_token.type, left, primary());
+        expr                            = mk_node(AST_BIN_OP, previous_token.type, left, unary());
     }
 
     return expr;
+}
+
+static struct ast_node *unary() {
+    if (match(T_MINUS) || match(T_NOT)) {
+        struct token previous_token = get_previous_token();
+        return mk_node(AST_UN_OP, previous_token.type, primary(), NULL);
+    }
+
+    match(T_PLUS);
+    return primary();
 }
 
 static struct ast_node *primary() {
