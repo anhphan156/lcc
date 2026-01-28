@@ -66,6 +66,22 @@ static uint32_t ast_walker(struct ast_node *node) {
             fprintf(dot_file, "%d [label = \"bin[*]\"];", node_id);
         if (node->token_type == T_SLASH)
             fprintf(dot_file, "%d [label = \"bin[/]\"];", node_id);
+        if (node->token_type == T_ANDAND)
+            fprintf(dot_file, "%d [label = \"bin[&&]\"];", node_id);
+        if (node->token_type == T_OROR)
+            fprintf(dot_file, "%d [label = \"bin[||]\"];", node_id);
+        if (node->token_type == T_NOTEQ)
+            fprintf(dot_file, "%d [label = \"bin[!=]\"];", node_id);
+        if (node->token_type == T_EQEQ)
+            fprintf(dot_file, "%d [label = \"bin[==]\"];", node_id);
+        if (node->token_type == T_GT)
+            fprintf(dot_file, "%d [label = \"bin[>]\"];", node_id);
+        if (node->token_type == T_GE)
+            fprintf(dot_file, "%d [label = \"bin[>=]\"];", node_id);
+        if (node->token_type == T_LT)
+            fprintf(dot_file, "%d [label = \"bin[<]\"];", node_id);
+        if (node->token_type == T_LE)
+            fprintf(dot_file, "%d [label = \"bin[<=]\"];", node_id);
     }
     if (node->ast_node_type == AST_UN_OP) {
         if (node->token_type == T_MINUS)

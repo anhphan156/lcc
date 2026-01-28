@@ -12,7 +12,16 @@
     X(T_SLASH)      \
     X(T_EQ)         \
     X(T_EQEQ)       \
+    X(T_NOTEQ)      \
+    X(T_LT)         \
+    X(T_LE)         \
+    X(T_GT)         \
+    X(T_GE)         \
     X(T_NOT)        \
+    X(T_AND)        \
+    X(T_ANDAND)     \
+    X(T_OR)         \
+    X(T_OROR)       \
     X(T_LPAREN)     \
     X(T_RPAREN)     \
     X(T_INTLIT)     \

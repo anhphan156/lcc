@@ -3,3 +3,7 @@ a = 1;
 scribe a + 1 - -2 - 12;
 scribe -a - -15 - +a * -1;
 scribe -1 * 10 + -a * -20;
+a = 2;
+scribe a * 2;
+a = 3;
+scribe a * -3;

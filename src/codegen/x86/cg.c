@@ -100,6 +100,36 @@ int cg_neg(int reg) {
     return reg;
 }
 
+int cg_and(int r1, int r2) {
+    FILE *asm_stream = asmfget();
+    if (asm_stream == NULL)
+        return -1;
+
+    if (r1 == -1 || r2 == -1) {
+        fprintf(stderr, "cg_op negative register location\n");
+        BREAKPOINT;
+    }
+
+    fprintf(asm_stream, "andq %s, %s\n", registers_list[r1], registers_list[r2]);
+    reg_free(r1);
+    return r2;
+}
+
+int cg_or(int r1, int r2) {
+    FILE *asm_stream = asmfget();
+    if (asm_stream == NULL)
+        return -1;
+
+    if (r1 == -1 || r2 == -1) {
+        fprintf(stderr, "cg_op negative register location\n");
+        BREAKPOINT;
+    }
+
+    fprintf(asm_stream, "orq %s, %s\n", registers_list[r1], registers_list[r2]);
+    reg_free(r1);
+    return r2;
+}
+
 void cg_print(int reg) {
     FILE *asm_stream = asmfget();
     if (asm_stream == NULL)

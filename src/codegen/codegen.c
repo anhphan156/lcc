@@ -48,6 +48,12 @@ static int ast_walker(struct ast_node *node, int in_reg) {
             return cg_mul(left_reg, right_reg);
         case T_SLASH:
             break;
+        case T_ANDAND:
+            return cg_and(left_reg, right_reg);
+            break;
+        case T_OROR:
+            return cg_or(left_reg, right_reg);
+            break;
         default:
             break;
         }

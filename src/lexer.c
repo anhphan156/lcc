@@ -57,14 +57,56 @@ scan:
     case '/':
         add_token(T_SLASH);
         break;
-    case '!':
-        add_token(T_NOT);
-        break;
     case ';':
         add_token(T_SEMICOLON);
         break;
+    case '|':
+        if (source[cur] == '|') {
+            advance();
+            add_token(T_OROR);
+            break;
+        }
+        add_token(T_OR);
+        break;
+    case '&':
+        if (source[cur] == '&') {
+            advance();
+            add_token(T_ANDAND);
+            break;
+        }
+        add_token(T_AND);
+        break;
+    case '!':
+        if (source[cur] == '=') {
+            advance();
+            add_token(T_NOTEQ);
+            break;
+        }
+        add_token(T_NOT);
+        break;
     case '=':
+        if (source[cur] == '=') {
+            advance();
+            add_token(T_EQEQ);
+            break;
+        }
         add_token(T_EQ);
+        break;
+    case '>':
+        if (source[cur] == '=') {
+            advance();
+            add_token(T_GE);
+            break;
+        }
+        add_token(T_GT);
+        break;
+    case '<':
+        if (source[cur] == '=') {
+            advance();
+            add_token(T_LE);
+            break;
+        }
+        add_token(T_LT);
         break;
     case '(':
         add_token(T_LPAREN);
