@@ -1,11 +1,9 @@
-#include "codegen.h"
+#include "codegen/x86/cg.h"
+#include "codegen/asm_file.h"
 #include "breakpoint.h"
-#include "token.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-static FILE *asm_stream = NULL;
 
 #define MAX_REG 4
 static char *registers_list[MAX_REG]  = {"%r8", "%r9", "%r10", "%r11"};
@@ -15,17 +13,9 @@ static int  reg_alloc(void);
 static void reg_free(int);
 static void reg_free_all(void);
 
-static int  ast_walker(struct ast_node *);
-static void cg_print(int);
-static int  cg_load(int);
-static int  cg_add(int, int);
-static int  cg_sub(int, int);
-static int  cg_mul(int, int);
-
-void generate_code(struct ast_node *node) {
-    asm_stream = fopen("./code.s", "w");
+void preamble() {
+    FILE *asm_stream = asmfget();
     if (asm_stream == NULL) {
-        perror("fopen");
         exit(1);
     }
     fprintf(asm_stream, ".globl main\n"
@@ -36,58 +26,20 @@ void generate_code(struct ast_node *node) {
                         "main:\n"
                         "push %%rbp\n"
                         "mov %%rsp, %%rbp\n");
+}
 
-    ast_walker(node);
-
+void postamble() {
+    FILE *asm_stream = asmfget();
+    if (asm_stream == NULL) {
+        exit(1);
+    }
     fprintf(asm_stream, "leave \n"
                         "xor %%rax, %%rax\n"
                         "ret\n");
-    fclose(asm_stream);
 }
 
-static int ast_walker(struct ast_node *node) {
-    int left_reg = -1, right_reg = -1;
-
-    if (node->left)
-        left_reg = ast_walker(node->left);
-
-    if (node->right)
-        right_reg = ast_walker(node->right);
-
-    if (node->ast_node_type == AST_BIN_OP) {
-        switch (node->token_type) {
-        case T_PLUS:
-            return cg_add(left_reg, right_reg);
-        case T_MINUS:
-            return cg_sub(left_reg, right_reg);
-        case T_STAR:
-            return cg_mul(left_reg, right_reg);
-        case T_SLASH:
-            break;
-        default:
-            break;
-        }
-    }
-
-    if (node->ast_node_type == AST_INTEGER) {
-        return cg_load(node->value.intval);
-    }
-
-    if (node->ast_node_type == AST_STMT) {
-        switch (node->token_type) {
-        case T_SCRIBE:
-            cg_print(left_reg);
-            reg_free_all();
-            break;
-        default:
-            break;
-        }
-    }
-
-    return -1;
-}
-
-static int cg_add(int r1, int r2) {
+int cg_add(int r1, int r2) {
+    FILE *asm_stream = asmfget();
     if (asm_stream == NULL)
         return -1;
 
@@ -102,7 +54,8 @@ static int cg_add(int r1, int r2) {
     return r2;
 }
 
-static int cg_sub(int r1, int r2) {
+int cg_sub(int r1, int r2) {
+    FILE *asm_stream = asmfget();
     if (asm_stream == NULL)
         return -1;
 
@@ -117,7 +70,8 @@ static int cg_sub(int r1, int r2) {
     return r1;
 }
 
-static int cg_mul(int r1, int r2) {
+int cg_mul(int r1, int r2) {
+    FILE *asm_stream = asmfget();
     if (asm_stream == NULL)
         return -1;
 
@@ -132,7 +86,8 @@ static int cg_mul(int r1, int r2) {
     return r2;
 }
 
-static void cg_print(int reg) {
+void cg_print(int reg) {
+    FILE *asm_stream = asmfget();
     if (asm_stream == NULL)
         return;
 
@@ -142,20 +97,59 @@ static void cg_print(int reg) {
             "xor %%rax, %%rax\n"
             "call printf\n",
             registers_list[reg]);
+
+    reg_free_all();
 }
 
-static int cg_load(int v) {
+int cg_load(int v) {
+    FILE *asm_stream = asmfget();
     if (asm_stream == NULL)
         return -1;
 
     int reg = reg_alloc();
     if (reg == -1) {
+        fprintf(stderr, "cg_load: can't allocate register\n");
         BREAKPOINT;
     }
 
     fprintf(asm_stream, "movq $%d, %s\n", v, registers_list[reg]);
 
     return reg;
+}
+
+void cg_store_globl(int reg, const char *sym) {
+    FILE *asm_stream = asmfget();
+    if (asm_stream == NULL)
+        return;
+
+    fprintf(asm_stream, "movq %s, %s(%%rip)\n", registers_list[reg], sym);
+    reg_free(reg);
+}
+
+int cg_load_globl(const char *sym) {
+    FILE *asm_stream = asmfget();
+    if (asm_stream == NULL)
+        return -1;
+
+    int reg = reg_alloc();
+    if (reg == -1) {
+        fprintf(stderr, "cg_load_globl: can't allocate register\n");
+        BREAKPOINT;
+    }
+
+    fprintf(asm_stream, "movq %s(%%rip), %s\n", sym, registers_list[reg]);
+
+    return reg;
+}
+
+void cg_globl_sym(const char *symbol_name) {
+    FILE *asm_stream = asmfget();
+    if (asm_stream == NULL) {
+        fprintf(stderr, "Prepass failed: asm_stream is NULL\n");
+        exit(1);
+    }
+
+    fprintf(asm_stream, ".comm %s,8,8\n", symbol_name);
 }
 
 static int reg_alloc(void) {

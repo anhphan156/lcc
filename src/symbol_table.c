@@ -8,6 +8,14 @@
 static struct symbol syms[NSYMBOLS];
 static uint32_t      syms_len = 0;
 
+const char *get_symbol_name(int id) {
+    if (id < syms_len) {
+        return syms[id].name;
+    }
+
+    return NULL;
+}
+
 int find_symbol(const char *name) {
     for (uint32_t i = 0; i < syms_len; i += 1) {
         if (*name == *syms[i].name && !strcmp(name, syms[i].name)) {

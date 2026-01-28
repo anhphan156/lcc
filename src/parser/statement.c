@@ -61,20 +61,19 @@ static struct ast_node *decl_statement() {
         exit(1);
     }
 
-    struct token     previous_token = get_previous_token();
-    struct ast_node *left           = mk_leaf(AST_IDENTIFIER, T_IDENTIFIER, previous_token.value);
+    struct token previous_token = get_previous_token();
 
     if (!match(T_SEMICOLON)) {
         fprintf(stderr, "Expected a `;` on line %d\n", get_previous_token().line);
         exit(1);
     }
 
-    return mk_node(AST_STMT, T_INT, left, NULL);
+    return mk_leaf(AST_DECL, T_INT, previous_token.value);
 }
 
 static struct ast_node *asgn_statement() {
     struct token     previous_token = get_previous_token();
-    struct ast_node *right          = mk_leaf(AST_IDENTIFIER, T_IDENTIFIER, previous_token.value);
+    struct ast_node *right          = mk_leaf(AST_LVALUE, T_IDENTIFIER, previous_token.value);
 
     if (!match(T_EQ)) {
         fprintf(stderr, "Expected a `=` on line %d\n", get_previous_token().line);

@@ -1,5 +1,7 @@
 #include "ast/ast_visualizer.h"
-#include "codegen.h"
+#include "ast/prepass.h"
+#include "codegen/codegen.h"
+#include "codegen/asm_file.h"
 #include "lexer.h"
 #include "parser/parser.h"
 #include "symbol_table.h"
@@ -23,10 +25,16 @@ int main(int argc, char **argv) {
     char  *src     = read_file(src_file_path, &src_len);
 
     lexical_scanner_setup(src, src_len);
-    struct ast_node *expr = ast_parse();
-    write_dot_graph(expr);
-    generate_code(expr);
-    ast_clean(expr);
+    struct ast_node *ast = ast_parse();
+    write_dot_graph(ast);
+
+    const char *asm_file_path = "code.s";
+    asmfopen(asm_file_path);
+    prepass(ast);
+    generate_code(ast);
+
+    asmfclose();
+    ast_clean(ast);
     clean_symbol_table();
     close_file(src, src_len);
 
@@ -35,7 +43,7 @@ int main(int argc, char **argv) {
         perror("fork");
         goto main_end;
     } else if (pid == 0) {
-        int ret = execlp("gcc", "gcc", "-o", "out", "code.s", NULL);
+        int ret = execlp("gcc", "gcc", "-o", "out", asm_file_path, NULL);
         if (ret == -1) {
             perror("execvl");
             goto main_end;

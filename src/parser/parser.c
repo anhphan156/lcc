@@ -1,4 +1,5 @@
 #include "parser/parser.h"
+#include "ast/ast.h"
 #include "parser/statement.h"
 #include "token.h"
 #include <stdio.h>

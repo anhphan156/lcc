@@ -4,23 +4,28 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define TOKEN_LIST  \
+    X(T_EOF)        \
+    X(T_PLUS)       \
+    X(T_MINUS)      \
+    X(T_STAR)       \
+    X(T_SLASH)      \
+    X(T_EQ)         \
+    X(T_EQEQ)       \
+    X(T_LPAREN)     \
+    X(T_RPAREN)     \
+    X(T_INTLIT)     \
+    X(T_DOUBLELIT)  \
+    X(T_STRLIT)     \
+    X(T_INT)        \
+    X(T_SEMICOLON)  \
+    X(T_SCRIBE)     \
+    X(T_IDENTIFIER)
+
 enum TOKEN_TYPE {
-    T_EOF,
-    T_PLUS,
-    T_MINUS,
-    T_STAR,
-    T_SLASH,
-    T_EQ,
-    T_EQEQ,
-    T_LPAREN,
-    T_RPAREN,
-    T_INTLIT,
-    T_DOUBLELIT,
-    T_STRLIT,
-    T_INT,
-    T_SEMICOLON,
-    T_SCRIBE,
-    T_IDENTIFIER,
+#define X(name) name,
+    TOKEN_LIST
+#undef X
 };
 
 union token_literal {

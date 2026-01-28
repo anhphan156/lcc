@@ -1,7 +1,8 @@
 #ifndef _CODEGEN_H
 #define _CODEGEN_H
 
-#include "ast/ast.h"
+struct ast_node;
 void generate_code(struct ast_node *);
+void gen_globl_sym(const char *);
 
 #endif

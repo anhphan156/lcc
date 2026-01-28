@@ -8,7 +8,8 @@ AlignConsecutiveBitFields: Consecutive
 AlignConsecutiveDeclarations: Consecutive
 AlignConsecutiveMacros: Consecutive
 
-# AlignEscapedNewlines: LeftWithLastLine
+AlignEscapedNewlines: LeftWithLastLine
 # AllowAllParametersOfDeclarationOnNextLine: false
 
 AlignArrayOfStructures: Right
+SortIncludes: false
