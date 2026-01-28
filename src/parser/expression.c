@@ -66,6 +66,20 @@ static struct ast_node *primary() {
         return mk_leaf(AST_IDENTIFIER, previous_token.type, previous_token.value);
     }
 
+    if (match(T_LPAREN)) {
+
+        struct ast_node *expr = expression();
+
+        if (!match(T_RPAREN)) {
+            struct token current_token = get_current_token();
+            printf("Expected token: `)` on line %d\n", current_token.line);
+            exit(1);
+            return NULL;
+        }
+
+        return mk_node(AST_GROUPING, T_LPAREN, expr, NULL);
+    }
+
     struct token current_token = get_current_token();
     printf("Unexpected token: %.*s on line %d\n", (int)current_token.lexeme_length, current_token.lexeme_start, current_token.line);
     exit(1);

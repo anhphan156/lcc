@@ -78,6 +78,10 @@ static uint32_t ast_walker(struct ast_node *node) {
         fprintf(dot_file, "%d [label = %ld];", node_id, node->value.intval);
     }
 
+    if (node->ast_node_type == AST_GROUPING) {
+        fprintf(dot_file, "%d [label = \"()\"];", node_id);
+    }
+
     if (left_id != 0)
         fprintf(dot_file, "%d -- %d;", node_id, left_id);
 

@@ -66,7 +66,12 @@ scan:
     case '=':
         add_token(T_EQ);
         break;
-
+    case '(':
+        add_token(T_LPAREN);
+        break;
+    case ')':
+        add_token(T_RPAREN);
+        break;
     default: {
         if (current_char <= '9' && current_char >= '0') {
             parse_number();

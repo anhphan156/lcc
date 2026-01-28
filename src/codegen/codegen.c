@@ -67,6 +67,10 @@ static int ast_walker(struct ast_node *node, int in_reg) {
         return cg_load(node->value.intval);
     }
 
+    if (node->ast_node_type == AST_GROUPING) {
+        return left_reg;
+    }
+
     if (node->ast_node_type == AST_IDENTIFIER) {
         const char *sym_name = get_symbol_name(node->value.id);
         if (sym_name == NULL) {
