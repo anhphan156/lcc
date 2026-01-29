@@ -29,7 +29,7 @@ void gen_globl_sym(const char *symbol_name) {
 }
 
 static int ast_walker(struct ast_node *node, int in_reg, struct ast_node *parent) {
-    int left_reg = NO_REG, right_reg = NO_REG;
+    int left_reg = NO_REG, right_reg = NO_REG, result_reg = NO_REG;
 
     if (node->ast_node_type == AST_STMT_BRANCH) {
         return ast_walker_if(node);
@@ -62,88 +62,64 @@ static int ast_walker(struct ast_node *node, int in_reg, struct ast_node *parent
     if (node->ast_node_type == AST_BIN_OP) {
         switch (node->token_type) {
         case T_PLUS:
-            return cg_add(left_reg, right_reg);
+            result_reg = cg_add(left_reg, right_reg);
+            break;
         case T_MINUS:
-            return cg_sub(left_reg, right_reg);
+            result_reg = cg_sub(left_reg, right_reg);
+            break;
         case T_STAR:
-            return cg_mul(left_reg, right_reg);
+            result_reg = cg_mul(left_reg, right_reg);
+            break;
         case T_SLASH:
             return NO_REG;
-        case T_ANDAND: {
-            int r = cg_and(left_reg, right_reg);
-            if (parent && parent->ast_node_type == AST_STMT_BRANCH) {
-                cg_cmp_1_jmp(r, in_reg);
-            }
-            return r;
-        }
-        case T_OROR: {
-            int r = cg_or(left_reg, right_reg);
-            if (parent && parent->ast_node_type == AST_STMT_BRANCH) {
-                cg_cmp_1_jmp(r, in_reg);
-            }
-            return r;
-        }
+        case T_ANDAND:
+            result_reg = cg_and(left_reg, right_reg);
+            break;
+        case T_OROR:
+            result_reg = cg_or(left_reg, right_reg);
+            break;
         case T_EQEQ:
-            if (parent && parent->ast_node_type == AST_STMT_BRANCH) {
-                return cg_compare_jmp(left_reg, right_reg, "jne", in_reg);
-            }
-            return cg_compare_set(left_reg, right_reg, "sete");
+            result_reg = cg_compare_set(left_reg, right_reg, "sete");
+            break;
         case T_NOTEQ:
-            if (parent && parent->ast_node_type == AST_STMT_BRANCH) {
-                return cg_compare_jmp(left_reg, right_reg, "je", in_reg);
-            }
-            return cg_compare_set(left_reg, right_reg, "setne");
+            result_reg = cg_compare_set(left_reg, right_reg, "setne");
+            break;
         case T_GT:
-            if (parent && parent->ast_node_type == AST_STMT_BRANCH) {
-                return cg_compare_jmp(left_reg, right_reg, "jle", in_reg);
-            }
-            return cg_compare_set(left_reg, right_reg, "setg");
+            result_reg = cg_compare_set(left_reg, right_reg, "setg");
+            break;
         case T_GE:
-            if (parent && parent->ast_node_type == AST_STMT_BRANCH) {
-                return cg_compare_jmp(left_reg, right_reg, "jl", in_reg);
-            }
-            return cg_compare_set(left_reg, right_reg, "setge");
+            result_reg = cg_compare_set(left_reg, right_reg, "setge");
+            break;
         case T_LT:
-            if (parent && parent->ast_node_type == AST_STMT_BRANCH) {
-                return cg_compare_jmp(left_reg, right_reg, "jge", in_reg);
-            }
-            return cg_compare_set(left_reg, right_reg, "setl");
+            result_reg = cg_compare_set(left_reg, right_reg, "setl");
+            break;
         case T_LE:
-            if (parent && parent->ast_node_type == AST_STMT_BRANCH) {
-                return cg_compare_jmp(left_reg, right_reg, "jg", in_reg);
-            }
-            return cg_compare_set(left_reg, right_reg, "setle");
+            result_reg = cg_compare_set(left_reg, right_reg, "setle");
+            break;
         default:
-            return NO_REG;
+            break;
         }
     }
 
     if (node->ast_node_type == AST_UN_OP) {
         switch (node->token_type) {
         case T_MINUS:
-            return cg_neg(left_reg);
-        case T_NOT: {
-            int r = cg_not(left_reg);
-            if (parent && parent->ast_node_type == AST_STMT_BRANCH) {
-                cg_cmp_1_jmp(r, in_reg);
-            }
-            return r;
-        }
+            result_reg = cg_neg(left_reg);
+            break;
+        case T_NOT:
+            result_reg = cg_not(left_reg);
+            break;
         default:
-            return NO_REG;
+            break;
         }
     }
 
     if (node->ast_node_type == AST_INTEGER) {
-        int r = cg_load(node->value.intval);
-        if (parent && parent->ast_node_type == AST_STMT_BRANCH) {
-            cg_cmp_1_jmp(r, in_reg);
-        }
-        return r;
+        result_reg = cg_load(node->value.intval);
     }
 
     if (node->ast_node_type == AST_GROUPING) {
-        return left_reg;
+        result_reg = left_reg;
     }
 
     if (node->ast_node_type == AST_IDENTIFIER) {
@@ -153,25 +129,24 @@ static int ast_walker(struct ast_node *node, int in_reg, struct ast_node *parent
             BREAKPOINT;
         }
 
-        int r = cg_load_globl(sym_name);
-        if (parent && parent->ast_node_type == AST_STMT_BRANCH) {
-            cg_cmp_1_jmp(r, in_reg);
-        }
-
-        return r;
+        result_reg = cg_load_globl(sym_name);
     }
 
     if (node->ast_node_type == AST_STMT) {
         switch (node->token_type) {
         case T_PRINT:
             cg_print(left_reg);
-            return NO_REG;
+            break;
         default:
-            return NO_REG;
+            break;
         }
     }
 
-    return NO_REG;
+    if (parent && parent->ast_node_type == AST_STMT_BRANCH) {
+        cg_test_jmp(result_reg, in_reg);
+    }
+
+    return result_reg;
 }
 
 static int ast_walker_if(struct ast_node *node) {

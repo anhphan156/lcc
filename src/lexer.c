@@ -218,7 +218,7 @@ static void add_identifier() {
 }
 
 static bool add_keyword(const enum TOKEN_TYPE token_type, const char *keyword) {
-    char *lexeme = strndup(source + token_start, cur - token_start - 1); // minus 1 for the trailing whitespace
+    char *lexeme = strndup(source + token_start, cur - token_start);
 
     bool valid_keyword = false;
     if (!strcmp(lexeme, keyword)) {
@@ -251,12 +251,10 @@ static void parse_number() {
 }
 
 static void parse_identifier(uint32_t first_char_index) {
-    char first_char   = source[first_char_index];
-    char second_char  = source[first_char_index + 1];
-    char current_char = peek();
+    char first_char  = source[first_char_index];
+    char second_char = source[first_char_index + 1];
 
-    while (isalpha(current_char)) {
-        current_char = peek();
+    while (isalpha(peek())) {
         advance();
     }
 

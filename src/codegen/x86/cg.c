@@ -170,25 +170,7 @@ int cg_compare_set(int r1, int r2, const char *op) {
     return r2;
 }
 
-int cg_compare_jmp(int r1, int r2, const char *op, int label_id) {
-    FILE *asm_stream = asmfget();
-    if (asm_stream == NULL)
-        return -1;
-
-    if (r1 == -1 || r2 == -1) {
-        fprintf(stderr, "cg_op negative register location\n");
-        BREAKPOINT;
-    }
-
-    fprintf(asm_stream, "cmpq %s, %s\n", registers_list[r2], registers_list[r1]);
-    fprintf(asm_stream, "%s L%d\n", op, label_id);
-
-    reg_free(r1);
-    reg_free(r2);
-    return -1;
-}
-
-void cg_cmp_1_jmp(int reg, int label_id) {
+void cg_test_jmp(int reg, int label_id) {
     FILE *asm_stream = asmfget();
     if (asm_stream == NULL)
         return;
@@ -198,9 +180,10 @@ void cg_cmp_1_jmp(int reg, int label_id) {
         BREAKPOINT;
     }
 
-    fprintf(asm_stream, "cmp $0x1, %s\n", registers_list[reg]);
-    fprintf(asm_stream, "andq $0x1, %s\n", registers_list[reg]);
+    fprintf(asm_stream, "test %s, %s\n", registers_list[reg], registers_list[reg]);
     fprintf(asm_stream, "je L%d\n", label_id);
+
+    reg_free(reg);
 }
 
 void cg_print(int reg) {

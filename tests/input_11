@@ -51,3 +51,43 @@ si (c) {
 si (!(a || b) && 1) {
 	scribe 1000;
 }
+
+si ( 1 <= 2) {
+	scribe 1100;
+}
+
+si ( 2 <= 2) {
+	scribe 1200;
+}
+
+si ( 3 <= 2) {
+	scribe 1300;
+}
+
+si ( 1 >= 2) {
+	scribe 1400;
+}
+
+si ( 2 >= 2) {
+	scribe 1500;
+}
+
+si ( 3 >= 2) {
+	scribe 1600;
+}
+
+si (1 == 1) {
+	scribe 1700;
+}
+
+si (1 != 1) {
+	scribe 1700;
+}
+
+si ((0)) {
+	scribe 1800;
+}
+
+si ((9)) {
+	scribe 1800;
+}

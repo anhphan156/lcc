@@ -1,53 +1,5 @@
-int a;
-int b;
-a = 1 < 2;
-b = 1 > 2;
-
-si (b) {
-	scribe 111;
-	scribe 222;
-} alioquin {
-	si (a) {
-		scribe 333;
-	} alioquin {
-		scribe 444;
-	}
-	scribe a * 10 - a * b - 15;
-	scribe 555;
-}
-
-si (a) {
-	scribe 111;
-} alioquin {
-	scribe 222;
-}
-
-si (1) {
-	scribe 333;
-}
-
-si (0) {
-	scribe 444;
-}
-
-si (a) {
-	scribe 998;
-}
-
-si (!a) {
-	scribe 999;
-}
-
-scribe 555;
-scribe !1;
-scribe !0;
-scribe !a + a;
-
-int c;
-c = !(a || b) && 1;
-si (c) {
-	scribe 1000;
-}
-si (!(a || b) && 1) {
-	scribe 1000;
+si (2 < 2) {
+	scribe 1;
+}alioquin{
+	scribe 2;
 }
