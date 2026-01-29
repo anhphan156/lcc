@@ -24,7 +24,7 @@ static void   add_identifier();
 static char   peek();
 static void   advance();
 static void   parse_number();
-static void   parse_identifier(char);
+static void   parse_identifier(uint32_t);
 static bool   is_eof();
 static int8_t lexical_next();
 
@@ -108,6 +108,12 @@ scan:
         }
         add_token(T_LT);
         break;
+    case '{':
+        add_token(T_LBRACE);
+        break;
+    case '}':
+        add_token(T_RBRACE);
+        break;
     case '(':
         add_token(T_LPAREN);
         break;
@@ -121,7 +127,7 @@ scan:
         }
 
         if (isalpha(current_char) || current_char == '_') {
-            parse_identifier(current_char);
+            parse_identifier(cur - 1);
             return 0;
         }
 
@@ -212,7 +218,7 @@ static void add_identifier() {
 }
 
 static bool add_keyword(const enum TOKEN_TYPE token_type, const char *keyword) {
-    char *lexeme = strdup(keyword);
+    char *lexeme = strndup(source + token_start, cur - token_start - 1); // minus 1 for the trailing whitespace
 
     bool valid_keyword = false;
     if (!strcmp(lexeme, keyword)) {
@@ -244,7 +250,9 @@ static void parse_number() {
     add_int_token(T_INTLIT);
 }
 
-static void parse_identifier(char first_char) {
+static void parse_identifier(uint32_t first_char_index) {
+    char first_char   = source[first_char_index];
+    char second_char  = source[first_char_index + 1];
     char current_char = peek();
 
     while (isalpha(current_char)) {
@@ -254,11 +262,18 @@ static void parse_identifier(char first_char) {
 
     bool valid_keyword = false;
     switch (first_char) {
+    case 'a':
+        valid_keyword = add_keyword(T_ELSE, "alioquin");
+        break;
     case 'i':
         valid_keyword = add_keyword(T_INT, "int");
         break;
     case 's':
-        valid_keyword = add_keyword(T_SCRIBE, "scribe");
+        if (second_char == 'c') {
+            valid_keyword = add_keyword(T_PRINT, "scribe");
+        } else if (second_char == 'i') {
+            valid_keyword = add_keyword(T_IF, "si");
+        }
         break;
     default:
         break;

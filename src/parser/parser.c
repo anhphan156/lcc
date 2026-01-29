@@ -1,12 +1,10 @@
 #include "parser/parser.h"
 #include "ast/ast.h"
 #include "parser/statement.h"
-#include "token.h"
-#include <stdio.h>
 #include <stdlib.h>
 
 struct ast_node *ast_parse() {
-    return statements_block();
+    return top_level();
 }
 
 void ast_clean(struct ast_node *expr) {

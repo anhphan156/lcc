@@ -36,13 +36,21 @@ static uint32_t ast_walker(struct ast_node *node) {
     }
 
     if (node->ast_node_type == AST_STMT) {
-        if (node->token_type == T_SCRIBE) {
+        if (node->token_type == T_PRINT) {
             fprintf(dot_file, "%d [label = scribe];", node_id);
         }
 
         if (node->token_type == T_EQ) {
             fprintf(dot_file, "%d [label = \"=\"];", node_id);
         }
+    }
+
+    if (node->ast_node_type == AST_STMT_BRANCH) {
+        fprintf(dot_file, "%d [label = \"branch\"];", node_id);
+    }
+
+    if (node->ast_node_type == AST_STMT_BRANCH_BODY) {
+        fprintf(dot_file, "%d [label = \"con/alt\"];", node_id);
     }
 
     if (node->ast_node_type == AST_IDENTIFIER) {

@@ -2,6 +2,6 @@
 #define _STATEMENT_H
 
 struct ast_node;
-struct ast_node *statements_block();
+struct ast_node *top_level();
 
 #endif

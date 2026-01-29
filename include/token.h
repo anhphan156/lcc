@@ -24,13 +24,17 @@
     X(T_OROR)       \
     X(T_LPAREN)     \
     X(T_RPAREN)     \
+    X(T_LBRACE)     \
+    X(T_RBRACE)     \
     X(T_INTLIT)     \
     X(T_DOUBLELIT)  \
     X(T_STRLIT)     \
     X(T_INT)        \
     X(T_SEMICOLON)  \
-    X(T_SCRIBE)     \
-    X(T_IDENTIFIER)
+    X(T_IDENTIFIER) \
+    X(T_PRINT)      \
+    X(T_IF)         \
+    X(T_ELSE)
 
 enum TOKEN_TYPE {
 #define X(name) name,
