@@ -85,6 +85,20 @@ int cg_mul(int r1, int r2) {
     return r2;
 }
 
+int cg_div(int r1, int r2) {
+    FILE *asm_stream = asmfget();
+    if (asm_stream == NULL)
+        return -1;
+
+    fprintf(asm_stream, "movq %s, %%rax\n", registers_list[r1]);
+    fprintf(asm_stream, "cqo\n");
+    fprintf(asm_stream, "idivq %s\n", registers_list[r2]);
+    fprintf(asm_stream, "movq %%rax, %s\n", registers_list[r1]);
+
+    reg_free(r2);
+    return r1;
+}
+
 int cg_neg(int reg) {
     FILE *asm_stream = asmfget();
     if (asm_stream == NULL)

@@ -85,7 +85,7 @@ static int ast_walker_expression(struct ast_node *node) {
         case T_STAR:
             return cg_mul(left_reg, right_reg);
         case T_SLASH:
-            return NO_REG;
+            return cg_div(left_reg, right_reg);
         case T_ANDAND:
             return cg_and(left_reg, right_reg);
         case T_OROR:

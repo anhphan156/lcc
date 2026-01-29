@@ -8,6 +8,7 @@ int  cg_load(int);
 int  cg_add(int, int);
 int  cg_sub(int, int);
 int  cg_mul(int, int);
+int  cg_div(int, int);
 int  cg_neg(int);
 void cg_jmp(int);
 int  cg_and(int, int);

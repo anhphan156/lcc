@@ -254,7 +254,7 @@ static void parse_identifier(uint32_t first_char_index) {
     char first_char  = source[first_char_index];
     char second_char = source[first_char_index + 1];
 
-    while (isalpha(peek())) {
+    while (isalpha(peek()) || peek() == '_' || (peek() <= '9' && peek() >= '0')) {
         advance();
     }
 

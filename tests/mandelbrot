@@ -1,0 +1,58 @@
+int left_edge;
+int right_edge;
+int top_edge;
+int bottom_edge;
+int x_step;
+int y_step;
+
+left_edge = -420;
+right_edge = 300;
+top_edge = 300;
+bottom_edge = -300;
+x_step = 7;
+y_step = 15;
+
+int max_iter;
+int x0;
+int y0;
+int x;
+int y;
+int xx;
+int yy;
+int c;
+int i;
+
+x0 = left_edge;
+y0 = top_edge;
+max_iter = 200;
+
+dum (y0 > bottom_edge) {
+	dum (x0 < right_edge) {
+		x = 0;
+		y = 0;
+		c = 0;
+		i = 0;
+		dum (i < max_iter) {
+			xx = x * x / 200;
+			yy = y * y / 200;
+
+			si (xx + yy > 800) {
+				c = i;
+				si (i > 9) {
+					c = 8;
+				}
+				i = max_iter;
+			}
+
+			y = x * y / 100 + y0;
+			x = xx - yy + x0;
+			i = i + 1;
+		}
+
+		scribe c;
+		x0 = x0 + x_step;
+	}
+
+	scribe 1;
+	y0 = y0 - y_step;
+}
