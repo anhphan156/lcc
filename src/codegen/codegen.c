@@ -54,6 +54,24 @@ static int ast_walker(struct ast_node *node, int in_reg) {
         case T_OROR:
             return cg_or(left_reg, right_reg);
             break;
+        case T_EQEQ:
+            return cg_compare(left_reg, right_reg, "sete");
+            break;
+        case T_NOTEQ:
+            return cg_compare(left_reg, right_reg, "setne");
+            break;
+        case T_GT:
+            return cg_compare(left_reg, right_reg, "setg");
+            break;
+        case T_GE:
+            return cg_compare(left_reg, right_reg, "setge");
+            break;
+        case T_LT:
+            return cg_compare(left_reg, right_reg, "setl");
+            break;
+        case T_LE:
+            return cg_compare(left_reg, right_reg, "setle");
+            break;
         default:
             break;
         }
