@@ -1,17 +1,7 @@
-int a;
-int b;
-int c;
-a = 0;
-b = 1;
-c = a + b;
-
-scribe a;
-scribe b;
-scribe c;
-
-dum (c < 200) {
-	a = b;
-	b = c;
-	c = a + b;
-	scribe c;
+si (1 < 2) {
+	scribe 1;
+	scribe 1;
+} alioquin {
+	scribe 2;
+	scribe 2;
 }

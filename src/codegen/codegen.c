@@ -10,10 +10,13 @@
 
 #define NO_REG -1
 
-static int ast_walker(struct ast_node *, int, struct ast_node *);
-static int ast_walker_if(struct ast_node *);
-static int ast_walker_while(struct ast_node *);
-static int label(void);
+static void ast_walker(struct ast_node *);
+static int  ast_walker_expression(struct ast_node *);
+static void ast_walker_if(struct ast_node *);
+static void ast_walker_while(struct ast_node *);
+static void ast_walker_assignment(struct ast_node *);
+static void ast_walker_print(struct ast_node *);
+static int  label(void);
 
 void generate_code(struct ast_node *node) {
     FILE *asm_stream = asmfget();
@@ -21,7 +24,7 @@ void generate_code(struct ast_node *node) {
         exit(1);
     }
     preamble();
-    ast_walker(node, NO_REG, NULL);
+    ast_walker(node);
     postamble();
 }
 
@@ -29,39 +32,48 @@ void gen_globl_sym(const char *symbol_name) {
     cg_globl_sym(symbol_name);
 }
 
-static int ast_walker(struct ast_node *node, int in_reg, struct ast_node *parent) {
-    int left_reg = NO_REG, right_reg = NO_REG;
-
-    if (node->ast_node_type == AST_STMT_BRANCH) {
-        return ast_walker_if(node);
+static void ast_walker(struct ast_node *node) {
+    if (node->ast_node_type == AST_DECL) {
+        return;
     }
 
-    if (node->ast_node_type == AST_STMT_WHILE) {
-        return ast_walker_while(node);
+    if (node->ast_node_type == AST_STMT) {
+        switch (node->token_type) {
+        case T_IF:
+            return ast_walker_if(node);
+        case T_WHILE:
+            return ast_walker_while(node);
+        case T_EQ:
+            return ast_walker_assignment(node);
+        case T_PRINT:
+            return ast_walker_print(node);
+        default:
+            return;
+        }
     }
 
     if (node->left) {
-        left_reg = ast_walker(node->left, NO_REG, node);
+        ast_walker(node->left);
     }
 
     if (node->right) {
-        right_reg = ast_walker(node->right, left_reg, node);
+        ast_walker(node->right);
     }
 
     if (node->ast_node_type == AST_STMTS_BLOCK) {
         reg_free_all();
-        return NO_REG;
+    }
+}
+
+static int ast_walker_expression(struct ast_node *node) {
+    int left_reg = NO_REG, right_reg = NO_REG;
+
+    if (node->left) {
+        left_reg = ast_walker_expression(node->left);
     }
 
-    if (node->ast_node_type == AST_LVALUE) {
-        const char *sym_name = get_symbol_name(node->value.id);
-        if (sym_name == NULL) {
-            fprintf(stderr, "Prepass failed: symbol_name not found\n");
-            BREAKPOINT;
-        }
-        cg_store_globl(in_reg, sym_name);
-        reg_free_all();
-        return NO_REG;
+    if (node->right) {
+        right_reg = ast_walker_expression(node->right);
     }
 
     if (node->ast_node_type == AST_BIN_OP) {
@@ -124,24 +136,10 @@ static int ast_walker(struct ast_node *node, int in_reg, struct ast_node *parent
         return cg_load_globl(sym_name);
     }
 
-    if (node->ast_node_type == AST_STMT) {
-        switch (node->token_type) {
-        case T_PRINT:
-            cg_print(left_reg);
-            return NO_REG;
-        default:
-            return NO_REG;
-        }
-    }
-
     return NO_REG;
 }
 
-static int ast_walker_if(struct ast_node *node) {
-    if (!(node && node->ast_node_type == AST_STMT_BRANCH && node->left && node->right)) {
-        BREAKPOINT;
-    }
-
+static void ast_walker_if(struct ast_node *node) {
     struct ast_node *condition   = node->left;
     struct ast_node *consequence = node->right->left;
     struct ast_node *alternative = node->right->right;
@@ -154,11 +152,11 @@ static int ast_walker_if(struct ast_node *node) {
         l_end = label();
     }
 
-    int expr_reg = ast_walker(condition, l_else, node);
+    int expr_reg = ast_walker_expression(condition);
     cg_test_jmp(expr_reg, l_else);
     reg_free_all();
 
-    ast_walker(consequence, NO_REG, node->right);
+    ast_walker(consequence);
     reg_free_all();
 
     if (alternative) {
@@ -167,34 +165,42 @@ static int ast_walker_if(struct ast_node *node) {
 
     cg_label(l_else);
     if (alternative) {
-        ast_walker(alternative, NO_REG, node->right);
+        ast_walker(alternative);
         reg_free_all();
 
         cg_label(l_end);
     }
-
-    return NO_REG;
 }
 
-static int ast_walker_while(struct ast_node *node) {
-    if (!(node && node->ast_node_type == AST_STMT_WHILE && node->left && node->right)) {
-        BREAKPOINT;
-    }
-
+static void ast_walker_while(struct ast_node *node) {
     int l_start = label();
     int l_end   = label();
 
     cg_label(l_start);
-    int expr_reg = ast_walker(node->left, l_end, node);
+    int expr_reg = ast_walker_expression(node->left);
     cg_test_jmp(expr_reg, l_end);
     reg_free_all();
 
-    ast_walker(node->right, NO_REG, node->right);
+    ast_walker(node->right);
     reg_free_all();
     cg_jmp(l_start);
     cg_label(l_end);
+}
 
-    return NO_REG;
+static void ast_walker_assignment(struct ast_node *node) {
+    const char *sym_name = get_symbol_name(node->right->value.id);
+    if (sym_name == NULL) {
+        fprintf(stderr, "Codegen failed: symbol_name not found\n");
+        BREAKPOINT;
+    }
+
+    int r = ast_walker_expression(node->left);
+    cg_store_globl(r, sym_name);
+    reg_free_all();
+}
+
+static void ast_walker_print(struct ast_node *node) {
+    cg_print(ast_walker_expression(node->left));
 }
 
 static int label(void) {

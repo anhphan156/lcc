@@ -107,7 +107,7 @@ static struct ast_node *while_statement() {
 
     struct ast_node *right = statements_block();
 
-    return mk_node(AST_STMT_WHILE, T_WHILE, expr, right);
+    return mk_node(AST_STMT, T_WHILE, expr, right);
 }
 
 static struct ast_node *if_statement() {
@@ -127,12 +127,12 @@ static struct ast_node *if_statement() {
     struct ast_node *consequence = statements_block();
     if (match(T_ELSE)) {
         struct ast_node *alternative = statements_block();
-        right                        = mk_node(AST_STMT_BRANCH_BODY, T_IF, consequence, alternative);
+        right                        = mk_node(AST_STMTS_BLOCK, T_IF, consequence, alternative);
     } else {
-        right = mk_node(AST_STMT_BRANCH_BODY, T_IF, consequence, NULL);
+        right = mk_node(AST_STMTS_BLOCK, T_IF, consequence, NULL);
     }
 
-    return mk_node(AST_STMT_BRANCH, T_IF, expr, right);
+    return mk_node(AST_STMT, T_IF, expr, right);
 }
 
 static struct ast_node *print_statement() {
