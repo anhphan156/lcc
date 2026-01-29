@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
         perror("fork");
         goto main_end;
     } else if (pid == 0) {
-        int ret = execlp("gcc", "gcc", "-o", "out", asm_file_path, NULL);
+        int ret = execlp("gcc", "gcc", "-g", "-o", "out", asm_file_path, NULL);
         if (ret == -1) {
             perror("execvl");
             goto main_end;

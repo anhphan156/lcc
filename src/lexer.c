@@ -263,6 +263,9 @@ static void parse_identifier(uint32_t first_char_index) {
     case 'a':
         valid_keyword = add_keyword(T_ELSE, "alioquin");
         break;
+    case 'd':
+        valid_keyword = add_keyword(T_WHILE, "dum");
+        break;
     case 'i':
         valid_keyword = add_keyword(T_INT, "int");
         break;

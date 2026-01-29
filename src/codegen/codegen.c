@@ -12,6 +12,7 @@
 
 static int ast_walker(struct ast_node *, int, struct ast_node *);
 static int ast_walker_if(struct ast_node *);
+static int ast_walker_while(struct ast_node *);
 static int label(void);
 
 void generate_code(struct ast_node *node) {
@@ -29,10 +30,14 @@ void gen_globl_sym(const char *symbol_name) {
 }
 
 static int ast_walker(struct ast_node *node, int in_reg, struct ast_node *parent) {
-    int left_reg = NO_REG, right_reg = NO_REG, result_reg = NO_REG;
+    int left_reg = NO_REG, right_reg = NO_REG;
 
     if (node->ast_node_type == AST_STMT_BRANCH) {
         return ast_walker_if(node);
+    }
+
+    if (node->ast_node_type == AST_STMT_WHILE) {
+        return ast_walker_while(node);
     }
 
     if (node->left) {
@@ -62,64 +67,51 @@ static int ast_walker(struct ast_node *node, int in_reg, struct ast_node *parent
     if (node->ast_node_type == AST_BIN_OP) {
         switch (node->token_type) {
         case T_PLUS:
-            result_reg = cg_add(left_reg, right_reg);
-            break;
+            return cg_add(left_reg, right_reg);
         case T_MINUS:
-            result_reg = cg_sub(left_reg, right_reg);
-            break;
+            return cg_sub(left_reg, right_reg);
         case T_STAR:
-            result_reg = cg_mul(left_reg, right_reg);
-            break;
+            return cg_mul(left_reg, right_reg);
         case T_SLASH:
             return NO_REG;
         case T_ANDAND:
-            result_reg = cg_and(left_reg, right_reg);
-            break;
+            return cg_and(left_reg, right_reg);
         case T_OROR:
-            result_reg = cg_or(left_reg, right_reg);
-            break;
+            return cg_or(left_reg, right_reg);
         case T_EQEQ:
-            result_reg = cg_compare_set(left_reg, right_reg, "sete");
-            break;
+            return cg_compare_set(left_reg, right_reg, "sete");
         case T_NOTEQ:
-            result_reg = cg_compare_set(left_reg, right_reg, "setne");
-            break;
+            return cg_compare_set(left_reg, right_reg, "setne");
         case T_GT:
-            result_reg = cg_compare_set(left_reg, right_reg, "setg");
-            break;
+            return cg_compare_set(left_reg, right_reg, "setg");
         case T_GE:
-            result_reg = cg_compare_set(left_reg, right_reg, "setge");
-            break;
+            return cg_compare_set(left_reg, right_reg, "setge");
         case T_LT:
-            result_reg = cg_compare_set(left_reg, right_reg, "setl");
-            break;
+            return cg_compare_set(left_reg, right_reg, "setl");
         case T_LE:
-            result_reg = cg_compare_set(left_reg, right_reg, "setle");
-            break;
+            return cg_compare_set(left_reg, right_reg, "setle");
         default:
-            break;
+            return NO_REG;
         }
     }
 
     if (node->ast_node_type == AST_UN_OP) {
         switch (node->token_type) {
         case T_MINUS:
-            result_reg = cg_neg(left_reg);
-            break;
+            return cg_neg(left_reg);
         case T_NOT:
-            result_reg = cg_not(left_reg);
-            break;
+            return cg_not(left_reg);
         default:
-            break;
+            return NO_REG;
         }
     }
 
     if (node->ast_node_type == AST_INTEGER) {
-        result_reg = cg_load(node->value.intval);
+        return cg_load(node->value.intval);
     }
 
     if (node->ast_node_type == AST_GROUPING) {
-        result_reg = left_reg;
+        return left_reg;
     }
 
     if (node->ast_node_type == AST_IDENTIFIER) {
@@ -129,28 +121,24 @@ static int ast_walker(struct ast_node *node, int in_reg, struct ast_node *parent
             BREAKPOINT;
         }
 
-        result_reg = cg_load_globl(sym_name);
+        return cg_load_globl(sym_name);
     }
 
     if (node->ast_node_type == AST_STMT) {
         switch (node->token_type) {
         case T_PRINT:
             cg_print(left_reg);
-            break;
+            return NO_REG;
         default:
-            break;
+            return NO_REG;
         }
     }
 
-    if (parent && parent->ast_node_type == AST_STMT_BRANCH) {
-        cg_test_jmp(result_reg, in_reg);
-    }
-
-    return result_reg;
+    return NO_REG;
 }
 
 static int ast_walker_if(struct ast_node *node) {
-    if (node->ast_node_type != AST_STMT_BRANCH || !node->left || !node->right) {
+    if (!(node && node->ast_node_type == AST_STMT_BRANCH && node->left && node->right)) {
         BREAKPOINT;
     }
 
@@ -166,7 +154,8 @@ static int ast_walker_if(struct ast_node *node) {
         l_end = label();
     }
 
-    ast_walker(condition, l_else, node);
+    int expr_reg = ast_walker(condition, l_else, node);
+    cg_test_jmp(expr_reg, l_else);
     reg_free_all();
 
     ast_walker(consequence, NO_REG, node->right);
@@ -183,6 +172,27 @@ static int ast_walker_if(struct ast_node *node) {
 
         cg_label(l_end);
     }
+
+    return NO_REG;
+}
+
+static int ast_walker_while(struct ast_node *node) {
+    if (!(node && node->ast_node_type == AST_STMT_WHILE && node->left && node->right)) {
+        BREAKPOINT;
+    }
+
+    int l_start = label();
+    int l_end   = label();
+
+    cg_label(l_start);
+    int expr_reg = ast_walker(node->left, l_end, node);
+    cg_test_jmp(expr_reg, l_end);
+    reg_free_all();
+
+    ast_walker(node->right, NO_REG, node->right);
+    reg_free_all();
+    cg_jmp(l_start);
+    cg_label(l_end);
 
     return NO_REG;
 }

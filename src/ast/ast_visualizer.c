@@ -53,6 +53,10 @@ static uint32_t ast_walker(struct ast_node *node) {
         fprintf(dot_file, "%d [label = \"con/alt\"];", node_id);
     }
 
+    if (node->ast_node_type == AST_STMT_WHILE) {
+        fprintf(dot_file, "%d [label = \"while\"];", node_id);
+    }
+
     if (node->ast_node_type == AST_IDENTIFIER) {
         fprintf(dot_file, "%d [label = \"ref: s[%d]\"];", node_id, node->value.id);
     }

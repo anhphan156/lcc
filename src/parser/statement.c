@@ -10,6 +10,7 @@
 static struct ast_node *statements_block();
 static struct ast_node *statement();
 static struct ast_node *if_statement();
+static struct ast_node *while_statement();
 static struct ast_node *print_statement();
 static struct ast_node *decl_statement();
 static struct ast_node *asgn_statement();
@@ -40,6 +41,8 @@ static struct ast_node *statements_block() {
             exit(1);
         } else if (match(T_IF)) {
             stmt = if_statement();
+        } else if (match(T_WHILE)) {
+            stmt = while_statement();
         } else if (match(T_PRINT)) {
             stmt = print_statement();
         } else if (match(T_INT)) {
@@ -67,6 +70,10 @@ static struct ast_node *statement() {
         return if_statement();
     }
 
+    if (match(T_WHILE)) {
+        return while_statement();
+    }
+
     if (match(T_PRINT)) {
         return print_statement();
     }
@@ -83,6 +90,24 @@ static struct ast_node *statement() {
     printf("Unexpected token: `%.*s` on line %d\n", (int)current_token.lexeme_length, current_token.lexeme_start, current_token.line);
     exit(1);
     return NULL;
+}
+
+static struct ast_node *while_statement() {
+    if (!match(T_LPAREN)) {
+        fprintf(stderr, "Expected a `(` on line %d\n", get_current_token().line);
+        exit(1);
+    }
+
+    struct ast_node *expr = expression();
+
+    if (!match(T_RPAREN)) {
+        fprintf(stderr, "Expected a `)` on line %d\n", get_current_token().line);
+        exit(1);
+    }
+
+    struct ast_node *right = statements_block();
+
+    return mk_node(AST_STMT_WHILE, T_WHILE, expr, right);
 }
 
 static struct ast_node *if_statement() {
