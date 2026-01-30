@@ -15,3 +15,13 @@ vacuum main() {
 
 	scribe 1;
 }
+
+vacuum test() {
+	scribe 1;
+}
+
+vacuum hey() {
+	si (1 < 2) {
+		scribe 2;
+	}
+}

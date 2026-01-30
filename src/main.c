@@ -26,12 +26,16 @@ int main(int argc, char **argv) {
 
     const char *asm_file_path = "code.s";
     asmfopen(asm_file_path);
+    asm_preamble();
+
+    open_dot_graph();
 
     lexical_scanner_setup(src, src_len);
 
     AstArray *aa = ast_parse();
     for (size_t i = 0; i < aa->len; i += 1) {
         struct ast_node *ast = aa->item[i];
+        write_dot_graph(ast, i);
         prepass(ast);
         generate_code(ast);
 
@@ -39,6 +43,7 @@ int main(int argc, char **argv) {
     }
     free(aa->item);
 
+    close_dot_graph();
     asmfclose();
     clean_symbol_table();
     close_file(src, src_len);

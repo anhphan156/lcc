@@ -2,6 +2,7 @@
 #define _CODEGEN_H
 
 struct ast_node;
+void asm_preamble();
 void generate_code(struct ast_node *);
 void gen_globl_sym(const char *);
 

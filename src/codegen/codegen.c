@@ -18,12 +18,15 @@ static void ast_walker_assignment(struct ast_node *);
 static void ast_walker_print(struct ast_node *);
 static int  label(void);
 
-void generate_code(struct ast_node *node) {
+void asm_preamble() {
     FILE *asm_stream = asmfget();
     if (asm_stream == NULL) {
         exit(1);
     }
     preamble();
+}
+
+void generate_code(struct ast_node *node) {
     ast_walker(node);
 }
 
@@ -37,7 +40,7 @@ static void ast_walker(struct ast_node *node) {
     }
 
     if (node->ast_node_type == AST_FUNC) {
-        const char *symbol_name = get_symbol_name(node->value.id);
+        const char *symbol_name = get_symbol_name(node->left->value.id);
         if (symbol_name == NULL) {
             fprintf(stderr, "funtion preamble failed: symbol_name not found\n");
             exit(1);

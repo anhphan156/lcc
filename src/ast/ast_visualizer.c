@@ -8,16 +8,24 @@ static FILE    *dot_file = NULL;
 static uint32_t node_id  = 1;
 static uint32_t ast_walker(struct ast_node *node);
 
-void write_dot_graph(struct ast_node *node) {
+void open_dot_graph() {
+    dot_file = fopen("ast.dot", "w");
+    fprintf(dot_file, "graph{");
+}
+
+void close_dot_graph() {
+    fprintf(dot_file, "}");
+    fclose(dot_file);
+}
+
+void write_dot_graph(struct ast_node *node, int id) {
     if (node == NULL) {
         return;
     }
 
-    dot_file = fopen("ast.dot", "w");
-    fprintf(dot_file, "graph{");
+    fprintf(dot_file, "subgraph cluster_%d {", id);
     ast_walker(node);
     fprintf(dot_file, "}");
-    fclose(dot_file);
 }
 
 static uint32_t ast_walker(struct ast_node *node) {
@@ -29,6 +37,10 @@ static uint32_t ast_walker(struct ast_node *node) {
 
     if (node->right) {
         right_id = ast_walker(node->right);
+    }
+
+    if (node->ast_node_type == AST_FUNC) {
+        fprintf(dot_file, "%d [label = function];", node_id);
     }
 
     if (node->ast_node_type == AST_STMTS_BLOCK) {
