@@ -1,11 +1,13 @@
-int a;
-a = 1 || 0 && 1;
-scribe a && 0;
-scribe 1 && 1;
-scribe 0 && 1;
-scribe 1 && 0;
-scribe 0 && 0;
-scribe 1 || 1;
-scribe 0 || 1;
-scribe 1 || 0;
-scribe 0 || 0;
+vacuum main() {
+	int a;
+	a = 1 || 0 && 1;
+	scribe a && 0;
+	scribe 1 && 1;
+	scribe 0 && 1;
+	scribe 1 && 0;
+	scribe 0 && 0;
+	scribe 1 || 1;
+	scribe 0 || 1;
+	scribe 1 || 0;
+	scribe 0 || 0;
+}

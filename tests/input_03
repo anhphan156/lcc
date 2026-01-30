@@ -1,5 +1,7 @@
-scribe 1 + 2 * 3 - 4
-+5-7;
-scribe 9-2
-+3*6
-;
+vacuum main() {
+	scribe 1 + 2 * 3 - 4
+	+5-7;
+	scribe 9-2
+	+3*6
+	;
+}

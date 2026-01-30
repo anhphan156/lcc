@@ -1,6 +1,6 @@
 #include "codegen/x86/cg.h"
 #include "codegen/asm_file.h"
-#include "breakpoint.h"
+#include "utils.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,17 +17,27 @@ void preamble() {
     if (asm_stream == NULL) {
         exit(1);
     }
-    fprintf(asm_stream, ".globl main\n"
-                        ".section .note.GNU-stack,\"\",@progbits\n"
+    fprintf(asm_stream, ".section .note.GNU-stack,\"\",@progbits\n"
                         ".data\n"
-                        "str: .asciz \"%%d\\n\"\n"
-                        ".text\n"
-                        "main:\n"
-                        "push %%rbp\n"
-                        "mov %%rsp, %%rbp\n");
+                        "str: .asciz \"%%d\\n\"\n");
 }
 
-void postamble() {
+void fn_preamble(const char *name) {
+    FILE *asm_stream = asmfget();
+    if (asm_stream == NULL) {
+        exit(1);
+    }
+    fprintf(asm_stream,
+            ".text\n"
+            ".globl %s\n"
+            ".type %s, @function\n"
+            "%s:\n"
+            "push %%rbp\n"
+            "mov %%rsp, %%rbp\n",
+            name, name, name);
+}
+
+void fn_postamble() {
     FILE *asm_stream = asmfget();
     if (asm_stream == NULL) {
         exit(1);

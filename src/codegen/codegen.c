@@ -1,5 +1,5 @@
 #include "codegen/codegen.h"
-#include "breakpoint.h"
+#include "utils.h"
 #include "codegen/asm_file.h"
 #include "codegen/x86/cg.h"
 #include "ast/ast.h"
@@ -25,7 +25,6 @@ void generate_code(struct ast_node *node) {
     }
     preamble();
     ast_walker(node);
-    postamble();
 }
 
 void gen_globl_sym(const char *symbol_name) {
@@ -34,6 +33,19 @@ void gen_globl_sym(const char *symbol_name) {
 
 static void ast_walker(struct ast_node *node) {
     if (node->ast_node_type == AST_DECL) {
+        return;
+    }
+
+    if (node->ast_node_type == AST_FUNC) {
+        const char *symbol_name = get_symbol_name(node->value.id);
+        if (symbol_name == NULL) {
+            fprintf(stderr, "funtion preamble failed: symbol_name not found\n");
+            exit(1);
+        }
+        fn_preamble(symbol_name);
+        ast_walker(node->right);
+        fn_postamble();
+
         return;
     }
 

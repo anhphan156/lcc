@@ -1,93 +1,95 @@
-int a;
-int b;
-a = 1 < 2;
-b = 1 > 2;
+vacuum main() {
+	int a;
+	int b;
+	a = 1 < 2;
+	b = 1 > 2;
 
-si (b) {
-	scribe 111;
-	scribe 222;
-} alioquin {
-	si (a) {
-		scribe 333;
+	si (b) {
+		scribe 111;
+		scribe 222;
 	} alioquin {
+		si (a) {
+			scribe 333;
+		} alioquin {
+			scribe 444;
+		}
+		scribe a * 10 - a * b - 15;
+		scribe 555;
+	}
+
+	si (a) {
+		scribe 111;
+	} alioquin {
+		scribe 222;
+	}
+
+	si (1) {
+		scribe 333;
+	}
+
+	si (0) {
 		scribe 444;
 	}
-	scribe a * 10 - a * b - 15;
+
+	si (a) {
+		scribe 998;
+	}
+
+	si (!a) {
+		scribe 999;
+	}
+
 	scribe 555;
-}
+	scribe !1;
+	scribe !0;
+	scribe !a + a;
 
-si (a) {
-	scribe 111;
-} alioquin {
-	scribe 222;
-}
+	int c;
+	c = !(a || b) && 1;
+	si (c) {
+		scribe 1000;
+	}
+	si (!(a || b) && 1) {
+		scribe 1000;
+	}
 
-si (1) {
-	scribe 333;
-}
+	si ( 1 <= 2) {
+		scribe 1100;
+	}
 
-si (0) {
-	scribe 444;
-}
+	si ( 2 <= 2) {
+		scribe 1200;
+	}
 
-si (a) {
-	scribe 998;
-}
+	si ( 3 <= 2) {
+		scribe 1300;
+	}
 
-si (!a) {
-	scribe 999;
-}
+	si ( 1 >= 2) {
+		scribe 1400;
+	}
 
-scribe 555;
-scribe !1;
-scribe !0;
-scribe !a + a;
+	si ( 2 >= 2) {
+		scribe 1500;
+	}
 
-int c;
-c = !(a || b) && 1;
-si (c) {
-	scribe 1000;
-}
-si (!(a || b) && 1) {
-	scribe 1000;
-}
+	si ( 3 >= 2) {
+		scribe 1600;
+	}
 
-si ( 1 <= 2) {
-	scribe 1100;
-}
+	si (1 == 1) {
+		scribe 1700;
+	}
 
-si ( 2 <= 2) {
-	scribe 1200;
-}
+	si (1 != 1) {
+		scribe 1700;
+	}
 
-si ( 3 <= 2) {
-	scribe 1300;
-}
+	si ((0)) {
+		scribe 1800;
+	}
 
-si ( 1 >= 2) {
-	scribe 1400;
-}
-
-si ( 2 >= 2) {
-	scribe 1500;
-}
-
-si ( 3 >= 2) {
-	scribe 1600;
-}
-
-si (1 == 1) {
-	scribe 1700;
-}
-
-si (1 != 1) {
-	scribe 1700;
-}
-
-si ((0)) {
-	scribe 1800;
-}
-
-si ((9)) {
-	scribe 1800;
+	si ((9)) {
+		scribe 1800;
+	}
 }

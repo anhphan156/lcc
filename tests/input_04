@@ -1,7 +1,9 @@
-int a;
-int b;
-a = 2 + 2 * 4;
-b = 2 * 23 - 200 + 7 - 2 * 5;
-scribe a + 223 * 2 - b;
-scribe a + b;
-scribe a - b;
+vacuum main() {
+	int a;
+	int b;
+	a = 2 + 2 * 4;
+	b = 2 * 23 - 200 + 7 - 2 * 5;
+	scribe a + 223 * 2 - b;
+	scribe a + b;
+	scribe a - b;
+}

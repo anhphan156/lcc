@@ -2,12 +2,12 @@
 #include "ast/ast.h"
 #include "lexer.h"
 #include "parser/expression.h"
+#include "parser/utils.h"
 #include "token.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-static struct ast_node *statements_block();
 static struct ast_node *statement();
 static struct ast_node *if_statement();
 static struct ast_node *for_statement();
@@ -15,22 +15,8 @@ static struct ast_node *while_statement();
 static struct ast_node *print_statement();
 static struct ast_node *decl_statement();
 static struct ast_node *asgn_statement();
-static void             semicolon();
-static void             l_paren();
-static void             r_paren();
 
-struct ast_node *top_level() {
-    struct ast_node *block = statement();
-
-    struct ast_node *stmt;
-    while ((stmt = statement()) != NULL) {
-        block = mk_node(AST_STMTS_BLOCK, 0, block, stmt);
-    }
-
-    return block;
-}
-
-static struct ast_node *statements_block() {
+struct ast_node *statements_block() {
     if (!match(T_LBRACE)) {
         fprintf(stderr, "Expected a `{` on line %d\n", get_current_token().line);
         exit(1);
@@ -92,6 +78,7 @@ static struct ast_node *statement() {
     if (current_token.type == T_RBRACE) {
         return NULL;
     }
+
     printf("Unexpected token: `%.*s` on line %d\n", (int)current_token.lexeme_length, current_token.lexeme_start, current_token.line);
     exit(1);
 
@@ -120,9 +107,9 @@ static struct ast_node *while_statement() {
     l_paren();
     struct ast_node *predicate = expression();
     r_paren();
-    struct ast_node *right = statements_block();
+    struct ast_node *body = statements_block();
 
-    return mk_node(AST_STMT, T_WHILE, predicate, right);
+    return mk_node(AST_STMT, T_WHILE, predicate, body);
 }
 
 static struct ast_node *if_statement() {
@@ -131,16 +118,16 @@ static struct ast_node *if_statement() {
     struct ast_node *predicate = expression();
     r_paren();
 
-    struct ast_node *right;
+    struct ast_node *body;
     struct ast_node *consequence = statements_block();
     if (match(T_ELSE)) {
         struct ast_node *alternative = statements_block();
-        right                        = mk_node(AST_STMTS_BLOCK, T_IF, consequence, alternative);
+        body                         = mk_node(AST_STMTS_BLOCK, T_IF, consequence, alternative);
     } else {
-        right = mk_node(AST_STMTS_BLOCK, T_IF, consequence, NULL);
+        body = mk_node(AST_STMTS_BLOCK, T_IF, consequence, NULL);
     }
 
-    return mk_node(AST_STMT, T_IF, predicate, right);
+    return mk_node(AST_STMT, T_IF, predicate, body);
 }
 
 static struct ast_node *print_statement() {
@@ -170,25 +157,4 @@ static struct ast_node *asgn_statement() {
 
     struct ast_node *left = expression();
     return mk_node(AST_STMT, T_EQ, left, right);
-}
-
-static void semicolon() {
-    if (!match(T_SEMICOLON)) {
-        fprintf(stderr, "Expected a `;` on line %d\n", get_previous_token().line);
-        exit(1);
-    }
-}
-
-static void r_paren() {
-    if (!match(T_RPAREN)) {
-        fprintf(stderr, "Expected a `)` on line %d\n", get_previous_token().line);
-        exit(1);
-    }
-}
-
-static void l_paren() {
-    if (!match(T_LPAREN)) {
-        fprintf(stderr, "Expected a `(` on line %d\n", get_previous_token().line);
-        exit(1);
-    }
 }

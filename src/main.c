@@ -24,17 +24,22 @@ int main(int argc, char **argv) {
     size_t src_len = 0;
     char  *src     = read_file(src_file_path, &src_len);
 
-    lexical_scanner_setup(src, src_len);
-    struct ast_node *ast = ast_parse();
-    write_dot_graph(ast);
-
     const char *asm_file_path = "code.s";
     asmfopen(asm_file_path);
-    prepass(ast);
-    generate_code(ast);
+
+    lexical_scanner_setup(src, src_len);
+
+    AstArray *aa = ast_parse();
+    for (size_t i = 0; i < aa->len; i += 1) {
+        struct ast_node *ast = aa->item[i];
+        prepass(ast);
+        generate_code(ast);
+
+        ast_clean(ast);
+    }
+    free(aa->item);
 
     asmfclose();
-    ast_clean(ast);
     clean_symbol_table();
     close_file(src, src_len);
 

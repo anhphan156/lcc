@@ -2,7 +2,8 @@
 #define _X86CG_H
 
 void preamble();
-void postamble();
+void fn_preamble(const char *);
+void fn_postamble();
 void cg_print(int);
 int  cg_load(int);
 int  cg_add(int, int);

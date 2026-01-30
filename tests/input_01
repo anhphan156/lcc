@@ -1,2 +1,4 @@
-scribe 1 + 2 * 5 - 2;
-scribe 1 - 2 + 5 * 2;
+vacuum main() {
+	scribe 1 + 2 * 5 - 2;
+	scribe 1 - 2 + 5 * 2;
+}

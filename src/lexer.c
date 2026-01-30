@@ -279,6 +279,9 @@ static void parse_identifier(uint32_t first_char_index) {
             valid_keyword = add_keyword(T_IF, "si");
         }
         break;
+    case 'v':
+        valid_keyword = add_keyword(T_VOID, "vacuum");
+        break;
     default:
         break;
     }

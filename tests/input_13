@@ -1,15 +1,17 @@
-int a;
-a = 0;
-dum (a < 5) {
-	scribe a;
-	scribe a * 2;
-	a = a + 1;
-}
+vacuum main() {
+	int a;
+	a = 0;
+	dum (a < 5) {
+		scribe a;
+		scribe a * 2;
+		a = a + 1;
+	}
 
-int b;
-pro (b = 0; b < 5; b = b + 1) {
-	scribe b;
-	scribe b * 2;
-}
+	int b;
+	pro (b = 0; b < 5; b = b + 1) {
+		scribe b;
+		scribe b * 2;
+	}
 
-scribe 1;
+	scribe 1;
+}

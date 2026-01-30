@@ -1,15 +1,17 @@
-int a;
-int b;
-a = 12;
-b = 24;
-scribe a < b;
-scribe a > b;
-scribe a * 2 == b;
-scribe a * 2 >= b;
-scribe a * 2 <= b;
-scribe 1 * -2 < 2 * 2 == 1;
-scribe 1 * -2 < 2 * 2 == 0;
-scribe 1 * -2 < 2 * 2 == a * 5 < b * -4;
-scribe 1 * -2 < 2 * 2 == a * 5 < b * 4;
-scribe 1 * -2 < 2 * 2 == a * 5 < b * -4 || 1;
-scribe 1 * -2 < 2 * 2 == (a * 5 < b * -4 || 1);
+vacuum main() {
+	int a;
+	int b;
+	a = 12;
+	b = 24;
+	scribe a < b;
+	scribe a > b;
+	scribe a * 2 == b;
+	scribe a * 2 >= b;
+	scribe a * 2 <= b;
+	scribe 1 * -2 < 2 * 2 == 1;
+	scribe 1 * -2 < 2 * 2 == 0;
+	scribe 1 * -2 < 2 * 2 == a * 5 < b * -4;
+	scribe 1 * -2 < 2 * 2 == a * 5 < b * 4;
+	scribe 1 * -2 < 2 * 2 == a * 5 < b * -4 || 1;
+	scribe 1 * -2 < 2 * 2 == (a * 5 < b * -4 || 1);
+}

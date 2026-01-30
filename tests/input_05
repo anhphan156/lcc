@@ -1,3 +1,4 @@
+vacuum main() {
 int
 b;
 int
@@ -15,3 +16,4 @@ c
 ;
 
 scribe 0 * b - c;
+}
