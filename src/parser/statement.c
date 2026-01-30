@@ -10,10 +10,14 @@
 static struct ast_node *statements_block();
 static struct ast_node *statement();
 static struct ast_node *if_statement();
+static struct ast_node *for_statement();
 static struct ast_node *while_statement();
 static struct ast_node *print_statement();
 static struct ast_node *decl_statement();
 static struct ast_node *asgn_statement();
+static void             semicolon();
+static void             l_paren();
+static void             r_paren();
 
 struct ast_node *top_level() {
     struct ast_node *block = statement();
@@ -35,93 +39,97 @@ static struct ast_node *statements_block() {
     struct ast_node *block = statement();
 
     struct ast_node *stmt;
-    while (!match(T_RBRACE)) {
-        if (match(T_EOF)) {
-            fprintf(stderr, "Expected a `}` on line %d\n", get_current_token().line);
-            exit(1);
-        } else if (match(T_IF)) {
-            stmt = if_statement();
-        } else if (match(T_WHILE)) {
-            stmt = while_statement();
-        } else if (match(T_PRINT)) {
-            stmt = print_statement();
-        } else if (match(T_INT)) {
-            stmt = decl_statement();
-        } else if (match(T_IDENTIFIER)) {
-            stmt = asgn_statement();
-        } else {
-            struct token current_token = get_current_token();
-            printf("Unexpected token: `%.*s` on line %d\n", (int)current_token.lexeme_length, current_token.lexeme_start, current_token.line);
-            exit(1);
-        }
-
+    while ((stmt = statement()) != NULL) {
         block = mk_node(AST_STMTS_BLOCK, 0, block, stmt);
+    }
+
+    if (!match(T_RBRACE)) {
+        fprintf(stderr, "Expected a `}` on line %d\n", get_current_token().line);
+        exit(1);
     }
 
     return block;
 }
 
 static struct ast_node *statement() {
+    struct token     current_token = get_current_token();
+    struct ast_node *stmt          = NULL;
+
     if (match(T_EOF)) {
         return NULL;
     }
 
-    if (match(T_IF)) {
+    if (current_token.type == T_IF) {
         return if_statement();
     }
 
-    if (match(T_WHILE)) {
+    if (current_token.type == T_FOR) {
+        return for_statement();
+    }
+
+    if (current_token.type == T_WHILE) {
         return while_statement();
     }
 
-    if (match(T_PRINT)) {
-        return print_statement();
+    if (current_token.type == T_PRINT) {
+        stmt = print_statement();
+        semicolon();
+        return stmt;
     }
 
-    if (match(T_INT)) {
-        return decl_statement();
+    if (current_token.type == T_INT) {
+        stmt = decl_statement();
+        semicolon();
+        return stmt;
     }
 
-    if (match(T_IDENTIFIER)) {
-        return asgn_statement();
+    if (current_token.type == T_IDENTIFIER) {
+        stmt = asgn_statement();
+        semicolon();
+        return stmt;
     }
 
-    struct token current_token = get_current_token();
+    if (current_token.type == T_RBRACE) {
+        return NULL;
+    }
     printf("Unexpected token: `%.*s` on line %d\n", (int)current_token.lexeme_length, current_token.lexeme_start, current_token.line);
     exit(1);
+
     return NULL;
 }
 
+static struct ast_node *for_statement() {
+    match(T_FOR);
+    l_paren();
+    struct ast_node *initialization = asgn_statement();
+    semicolon();
+    struct ast_node *predicate = expression();
+    semicolon();
+    struct ast_node *increment = asgn_statement();
+    r_paren();
+
+    struct ast_node *for_body = statements_block();
+    for_body                  = mk_node(AST_STMTS_BLOCK, 0, for_body, increment);
+
+    struct ast_node *for_stmt = mk_node(AST_STMT, T_WHILE, predicate, for_body);
+    return mk_node(AST_STMT, T_FOR, initialization, for_stmt);
+}
+
 static struct ast_node *while_statement() {
-    if (!match(T_LPAREN)) {
-        fprintf(stderr, "Expected a `(` on line %d\n", get_current_token().line);
-        exit(1);
-    }
-
-    struct ast_node *expr = expression();
-
-    if (!match(T_RPAREN)) {
-        fprintf(stderr, "Expected a `)` on line %d\n", get_current_token().line);
-        exit(1);
-    }
-
+    match(T_WHILE);
+    l_paren();
+    struct ast_node *predicate = expression();
+    r_paren();
     struct ast_node *right = statements_block();
 
-    return mk_node(AST_STMT, T_WHILE, expr, right);
+    return mk_node(AST_STMT, T_WHILE, predicate, right);
 }
 
 static struct ast_node *if_statement() {
-    if (!match(T_LPAREN)) {
-        fprintf(stderr, "Expected a `(` on line %d\n", get_current_token().line);
-        exit(1);
-    }
-
-    struct ast_node *expr = expression();
-
-    if (!match(T_RPAREN)) {
-        fprintf(stderr, "Expected a `)` on line %d\n", get_current_token().line);
-        exit(1);
-    }
+    match(T_IF);
+    l_paren();
+    struct ast_node *predicate = expression();
+    r_paren();
 
     struct ast_node *right;
     struct ast_node *consequence = statements_block();
@@ -132,37 +140,26 @@ static struct ast_node *if_statement() {
         right = mk_node(AST_STMTS_BLOCK, T_IF, consequence, NULL);
     }
 
-    return mk_node(AST_STMT, T_IF, expr, right);
+    return mk_node(AST_STMT, T_IF, predicate, right);
 }
 
 static struct ast_node *print_statement() {
-    struct ast_node *stmt = mk_node(AST_STMT, T_PRINT, expression(), NULL);
-
-    if (!match(T_SEMICOLON)) {
-        fprintf(stderr, "Expected a `;` on line %d\n", get_previous_token().line);
-        exit(1);
-    }
-
-    return stmt;
+    match(T_PRINT);
+    return mk_node(AST_STMT, T_PRINT, expression(), NULL);
 }
 
 static struct ast_node *decl_statement() {
+    match(T_INT);
     if (!match(T_IDENTIFIER)) {
         fprintf(stderr, "Expected an identifier on line %d\n", get_current_token().line);
         exit(1);
     }
 
-    struct token previous_token = get_previous_token();
-
-    if (!match(T_SEMICOLON)) {
-        fprintf(stderr, "Expected a `;` on line %d\n", get_previous_token().line);
-        exit(1);
-    }
-
-    return mk_leaf(AST_DECL, T_INT, previous_token.value);
+    return mk_leaf(AST_DECL, T_INT, get_current_token().value);
 }
 
 static struct ast_node *asgn_statement() {
+    match(T_IDENTIFIER);
     struct token     previous_token = get_previous_token();
     struct ast_node *right          = mk_leaf(AST_LVALUE, T_IDENTIFIER, previous_token.value);
 
@@ -172,12 +169,26 @@ static struct ast_node *asgn_statement() {
     }
 
     struct ast_node *left = expression();
-    struct ast_node *asgn = mk_node(AST_STMT, T_EQ, left, right);
+    return mk_node(AST_STMT, T_EQ, left, right);
+}
 
+static void semicolon() {
     if (!match(T_SEMICOLON)) {
         fprintf(stderr, "Expected a `;` on line %d\n", get_previous_token().line);
         exit(1);
     }
+}
 
-    return asgn;
+static void r_paren() {
+    if (!match(T_RPAREN)) {
+        fprintf(stderr, "Expected a `)` on line %d\n", get_previous_token().line);
+        exit(1);
+    }
+}
+
+static void l_paren() {
+    if (!match(T_LPAREN)) {
+        fprintf(stderr, "Expected a `(` on line %d\n", get_previous_token().line);
+        exit(1);
+    }
 }

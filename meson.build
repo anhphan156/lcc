@@ -47,6 +47,7 @@ foreach t : [
   ['test10', 'input_10', 'expected_10'],
   ['test11', 'input_11', 'expected_11'],
   ['test12', 'input_12', 'expected_12'],
+  ['test13', 'input_13', 'expected_13'],
 ]
 test(
   t[0],

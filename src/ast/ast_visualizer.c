@@ -48,6 +48,10 @@ static uint32_t ast_walker(struct ast_node *node) {
             fprintf(dot_file, "%d [label = \"while\"];", node_id);
         }
 
+        if (node->token_type == T_FOR) {
+            fprintf(dot_file, "%d [label = \"for\"];", node_id);
+        }
+
         if (node->token_type == T_IF) {
             fprintf(dot_file, "%d [label = \"if\"];", node_id);
         }

@@ -43,6 +43,9 @@ static void ast_walker(struct ast_node *node) {
             return ast_walker_if(node);
         case T_WHILE:
             return ast_walker_while(node);
+        case T_FOR:
+            ast_walker_assignment(node->left);
+            return ast_walker_while(node->right);
         case T_EQ:
             return ast_walker_assignment(node);
         case T_PRINT:

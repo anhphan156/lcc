@@ -269,6 +269,9 @@ static void parse_identifier(uint32_t first_char_index) {
     case 'i':
         valid_keyword = add_keyword(T_INT, "int");
         break;
+    case 'p':
+        valid_keyword = add_keyword(T_FOR, "pro");
+        break;
     case 's':
         if (second_char == 'c') {
             valid_keyword = add_keyword(T_PRINT, "scribe");

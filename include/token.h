@@ -35,7 +35,8 @@
     X(T_PRINT)      \
     X(T_IF)         \
     X(T_ELSE)       \
-    X(T_WHILE)
+    X(T_WHILE)      \
+    X(T_FOR)
 
 enum TOKEN_TYPE {
 #define X(name) name,
