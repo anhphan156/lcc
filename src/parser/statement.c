@@ -1,9 +1,11 @@
 #include "parser/statement.h"
 #include "ast/ast.h"
+#include "defs.h"
 #include "lexer.h"
 #include "parser/declaration.h"
 #include "parser/expression.h"
 #include "parser/utils.h"
+#include "symbol_table.h"
 #include "token.h"
 #include <stdbool.h>
 #include <stdio.h>
@@ -14,7 +16,9 @@ static struct ast_node *if_statement();
 static struct ast_node *for_statement();
 static struct ast_node *while_statement();
 static struct ast_node *print_statement();
-static struct ast_node *asgn_statement();
+static struct ast_node *assignment_statement();
+static struct ast_node *function_call_statement(struct token);
+static struct ast_node *variable_declaration();
 
 struct ast_node *statements_block() {
     if (!match(T_LBRACE)) {
@@ -63,14 +67,13 @@ static struct ast_node *statement() {
         return stmt;
     }
 
-    if (current_token.type == T_INT) {
-        stmt = variable_declaration();
+    if (current_token.type == T_IDENTIFIER) {
+        stmt = assignment_statement();
         semicolon();
         return stmt;
     }
 
-    if (current_token.type == T_IDENTIFIER) {
-        stmt = asgn_statement();
+    if ((stmt = variable_declaration())) {
         semicolon();
         return stmt;
     }
@@ -88,11 +91,11 @@ static struct ast_node *statement() {
 static struct ast_node *for_statement() {
     match(T_FOR);
     l_paren();
-    struct ast_node *initialization = asgn_statement();
+    struct ast_node *initialization = assignment_statement();
     semicolon();
     struct ast_node *predicate = expression();
     semicolon();
-    struct ast_node *increment = asgn_statement();
+    struct ast_node *increment = assignment_statement();
     r_paren();
 
     struct ast_node *for_body = statements_block();
@@ -135,16 +138,48 @@ static struct ast_node *print_statement() {
     return mk_node(AST_STMT, T_PRINT, expression(), NULL);
 }
 
-static struct ast_node *asgn_statement() {
+static struct ast_node *assignment_statement() {
     match(T_IDENTIFIER);
-    struct token     previous_token = get_previous_token();
-    struct ast_node *right          = mk_leaf(AST_LVALUE, T_IDENTIFIER, previous_token.value);
+    struct token id_token = get_previous_token();
 
     if (!match(T_EQ)) {
-        fprintf(stderr, "Expected a `=` on line %d\n", get_previous_token().line);
-        exit(1);
+        return function_call_statement(id_token);
     }
 
-    struct ast_node *left = expression();
+    struct ast_node *right = mk_leaf(AST_LVALUE, T_IDENTIFIER, id_token.value);
+    struct ast_node *left  = expression();
     return mk_node(AST_STMT, T_EQ, left, right);
+}
+
+static struct ast_node *function_call_statement(struct token id_token) {
+    if (match(T_LPAREN)) {
+        if (!match(T_RPAREN)) {
+            while (expression()) {
+                if (!match(T_COMMA)) {
+                    break;
+                }
+            }
+            match(T_RPAREN);
+        }
+        return mk_leaf(AST_FUNC_CALL, 0, id_token.value);
+    }
+
+    return NULL;
+}
+
+static struct ast_node *variable_declaration() {
+    struct token    current_token = get_current_token();
+    enum TOKEN_TYPE type_token    = current_token.type;
+    if (!is_type_token(type_token)) {
+        return NULL;
+    }
+
+    match(type_token);
+    identifier();
+
+    struct token id_token = get_previous_token();
+    set_symbol_stype(id_token.value.id, ST_VARIABLE);
+    set_symbol_etype(id_token.value.id, get_expression_type(type_token));
+
+    return mk_leaf(AST_DECL, type_token, id_token.value);
 }

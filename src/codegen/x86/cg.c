@@ -1,7 +1,6 @@
 #include "codegen/x86/cg.h"
 #include "codegen/asm_file.h"
 #include "utils.h"
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -45,6 +44,14 @@ void fn_postamble() {
     fprintf(asm_stream, "leave \n"
                         "xor %%rax, %%rax\n"
                         "ret\n");
+}
+
+void cg_call(const char *name) {
+    FILE *asm_stream = asmfget();
+    if (asm_stream == NULL)
+        return;
+
+    fprintf(asm_stream, "call %s\n", name);
 }
 
 int cg_add(int r1, int r2) {
@@ -274,14 +281,14 @@ int cg_load_globl(const char *sym) {
     return reg;
 }
 
-void cg_globl_sym(const char *symbol_name) {
+void cg_globl_sym(const char *symbol_name, uint8_t size) {
     FILE *asm_stream = asmfget();
     if (asm_stream == NULL) {
         fprintf(stderr, "Prepass failed: asm_stream is NULL\n");
         exit(1);
     }
 
-    fprintf(asm_stream, ".comm %s,8,8\n", symbol_name);
+    fprintf(asm_stream, ".comm %s,%d,8\n", symbol_name, size);
 }
 
 static int reg_alloc(void) {

@@ -43,6 +43,10 @@ static uint32_t ast_walker(struct ast_node *node) {
         fprintf(dot_file, "%d [label = function];", node_id);
     }
 
+    if (node->ast_node_type == AST_FUNC_CALL) {
+        fprintf(dot_file, "%d [label = \"call f[%d]\"];", node_id, node->value.id);
+    }
+
     if (node->ast_node_type == AST_STMTS_BLOCK) {
         fprintf(dot_file, "%d [label = stmts_block];", node_id);
     }

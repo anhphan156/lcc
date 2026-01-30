@@ -8,6 +8,24 @@
 static struct symbol syms[NSYMBOLS];
 static uint32_t      syms_len = 0;
 
+bool set_symbol_etype(int id, enum EXPRESSION_TYPE t) {
+    if (id < syms_len) {
+        syms[id].etype = t;
+        return true;
+    }
+
+    return false;
+}
+
+bool set_symbol_stype(int id, enum STRUCTURE_TYPE t) {
+    if (id < syms_len) {
+        syms[id].stype = t;
+        return true;
+    }
+
+    return false;
+}
+
 const char *get_symbol_name(int id) {
     if (id < syms_len) {
         return syms[id].name;
@@ -36,7 +54,9 @@ int add_symbol(const char *name) {
         return i;
     }
 
-    syms[syms_len].name = strdup(name);
+    syms[syms_len].name  = strdup(name);
+    syms[syms_len].etype = 0;
+    syms[syms_len].stype = 0;
 
     return syms_len++;
 }

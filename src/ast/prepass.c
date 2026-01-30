@@ -1,6 +1,7 @@
 #include "ast/prepass.h"
 #include "ast/ast.h"
 #include "codegen/codegen.h"
+#include "parser/utils.h"
 #include "symbol_table.h"
 #include <stddef.h>
 #include <stdio.h>
@@ -19,12 +20,29 @@ void prepass(struct ast_node *node) {
         prepass(node->right);
     }
 
-    if (node->ast_node_type == AST_DECL && node->token_type == T_INT) {
+    if (node->ast_node_type == AST_DECL) {
+        if (node->token_type == T_VOID) {
+            return;
+        }
+
         const char *symbol_name = get_symbol_name(node->value.id);
         if (symbol_name == NULL) {
             fprintf(stderr, "Prepass failed: symbol_name not found\n");
             exit(1);
         }
-        gen_globl_sym(symbol_name);
+
+        switch (node->token_type) {
+        case T_LONG:
+            gen_globl_sym(symbol_name, 8);
+            break;
+        case T_INT:
+            gen_globl_sym(symbol_name, 4);
+            break;
+        case T_CHAR:
+            gen_globl_sym(symbol_name, 1);
+            break;
+        default:
+            break;
+        }
     }
 }

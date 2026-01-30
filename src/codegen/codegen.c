@@ -5,6 +5,7 @@
 #include "ast/ast.h"
 #include "symbol_table.h"
 #include "token.h"
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -30,13 +31,23 @@ void generate_code(struct ast_node *node) {
     ast_walker(node);
 }
 
-void gen_globl_sym(const char *symbol_name) {
-    cg_globl_sym(symbol_name);
+void gen_globl_sym(const char *symbol_name, uint8_t size) {
+    cg_globl_sym(symbol_name, size);
 }
 
 static void ast_walker(struct ast_node *node) {
     if (node->ast_node_type == AST_DECL) {
         return;
+    }
+
+    if (node->ast_node_type == AST_FUNC_CALL) {
+        const char *sym_name = get_symbol_name(node->value.id);
+        if (sym_name == NULL) {
+            fprintf(stderr, "funtion call failed: symbol_name not found\n");
+            exit(1);
+        }
+
+        return cg_call(sym_name);
     }
 
     if (node->ast_node_type == AST_FUNC) {

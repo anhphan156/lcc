@@ -17,7 +17,7 @@ AstArray *ast_parse() {
     }
 
     struct ast_node *decl = NULL;
-    while ((decl = declaration()) != NULL) {
+    while ((decl = top_level_declaration()) != NULL) {
         if (ast_array.len >= ast_array.cap) {
             ast_array.cap *= 2;
             ast_array.item = realloc(ast_array.item, ast_array.cap);

@@ -2,7 +2,6 @@
 #define _DECLARATION_H
 
 struct ast_node;
-struct ast_node *declaration();
-struct ast_node *variable_declaration();
+struct ast_node *top_level_declaration();
 
 #endif

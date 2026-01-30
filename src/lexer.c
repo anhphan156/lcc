@@ -60,6 +60,9 @@ scan:
     case ';':
         add_token(T_SEMICOLON);
         break;
+    case ',':
+        add_token(T_COMMA);
+        break;
     case '|':
         if (source[cur] == '|') {
             advance();
@@ -181,6 +184,7 @@ static void advance() {
 static void add_token(const enum TOKEN_TYPE type) {
     current_token.type          = type;
     current_token.line          = line;
+    current_token.value.id      = 0;
     current_token.lexeme_start  = source + token_start;
     current_token.lexeme_length = cur - token_start;
 }
