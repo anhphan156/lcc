@@ -269,6 +269,9 @@ static void parse_identifier(uint32_t first_char_index) {
     case 'i':
         valid_keyword = add_keyword(T_INT, "int");
         break;
+    case 'l':
+        valid_keyword = add_keyword(T_CHAR, "literra");
+        break;
     case 'p':
         valid_keyword = add_keyword(T_FOR, "pro");
         break;

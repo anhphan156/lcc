@@ -30,6 +30,7 @@
     X(T_DOUBLELIT)  \
     X(T_STRLIT)     \
     X(T_INT)        \
+    X(T_CHAR)       \
     X(T_SEMICOLON)  \
     X(T_IDENTIFIER) \
     X(T_PRINT)      \

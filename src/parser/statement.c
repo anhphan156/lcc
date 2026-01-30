@@ -1,6 +1,7 @@
 #include "parser/statement.h"
 #include "ast/ast.h"
 #include "lexer.h"
+#include "parser/declaration.h"
 #include "parser/expression.h"
 #include "parser/utils.h"
 #include "token.h"
@@ -13,7 +14,6 @@ static struct ast_node *if_statement();
 static struct ast_node *for_statement();
 static struct ast_node *while_statement();
 static struct ast_node *print_statement();
-static struct ast_node *decl_statement();
 static struct ast_node *asgn_statement();
 
 struct ast_node *statements_block() {
@@ -64,7 +64,7 @@ static struct ast_node *statement() {
     }
 
     if (current_token.type == T_INT) {
-        stmt = decl_statement();
+        stmt = variable_declaration();
         semicolon();
         return stmt;
     }
@@ -133,16 +133,6 @@ static struct ast_node *if_statement() {
 static struct ast_node *print_statement() {
     match(T_PRINT);
     return mk_node(AST_STMT, T_PRINT, expression(), NULL);
-}
-
-static struct ast_node *decl_statement() {
-    match(T_INT);
-    if (!match(T_IDENTIFIER)) {
-        fprintf(stderr, "Expected an identifier on line %d\n", get_current_token().line);
-        exit(1);
-    }
-
-    return mk_leaf(AST_DECL, T_INT, get_current_token().value);
 }
 
 static struct ast_node *asgn_statement() {

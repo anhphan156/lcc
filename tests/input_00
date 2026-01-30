@@ -1,5 +1,6 @@
+int a;
+
 vacuum main() {
-	int a;
 	a = 0;
 	dum (a < 5) {
 		scribe a;
