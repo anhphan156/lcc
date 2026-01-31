@@ -3,6 +3,13 @@ int a;
 vacuum main() {
 	a = 10;
 	rec();
+
+	int b;
+	pro (b = 0; b < 5; b = b + 1) {
+		scribe b;
+	}
+
+	a();
 }
 
 vacuum rec() {

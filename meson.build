@@ -17,6 +17,7 @@ lcc = executable(
   'src/parser/expression.c',
   'src/parser/statement.c',
   'src/parser/declaration.c',
+  'src/parser/identifier.c',
   'src/parser/utils.c',
   'src/ast/ast_visualizer.c',
   'src/ast/prepass.c',

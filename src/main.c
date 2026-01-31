@@ -38,7 +38,6 @@ int main(int argc, char **argv) {
         write_dot_graph(ast, i);
         prepass(ast);
         generate_code(ast);
-
         ast_clean(ast);
     }
     free(aa->item);

@@ -26,6 +26,14 @@ bool set_symbol_stype(int id, enum STRUCTURE_TYPE t) {
     return false;
 }
 
+enum STRUCTURE_TYPE get_symbol_stype(int id) {
+    if (id < syms_len) {
+        return syms[id].stype;
+    }
+
+    return -1;
+}
+
 const char *get_symbol_name(int id) {
     if (id < syms_len) {
         return syms[id].name;
