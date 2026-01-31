@@ -24,7 +24,7 @@ void cg_test_jmp(int, int);
 void cg_globl_sym(const char *, uint8_t);
 void cg_label(int);
 void cg_store_globl(int, const char *, enum EXPRESSION_TYPE);
-int  cg_load_globl(const char *);
+int  cg_load_globl(const char *, enum EXPRESSION_TYPE);
 
 void reg_free_all(void);
 

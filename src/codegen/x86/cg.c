@@ -278,7 +278,7 @@ void cg_store_globl(int reg, const char *sym, enum EXPRESSION_TYPE size) {
     reg_free(reg);
 }
 
-int cg_load_globl(const char *sym) {
+int cg_load_globl(const char *sym, enum EXPRESSION_TYPE size) {
     FILE *asm_stream = asmfget();
     if (asm_stream == NULL)
         return -1;
@@ -289,7 +289,19 @@ int cg_load_globl(const char *sym) {
         BREAKPOINT;
     }
 
-    fprintf(asm_stream, "movq %s(%%rip), %s\n", sym, registers_list[reg]);
+    switch (size) {
+    case ET_CHAR:
+        fprintf(asm_stream, "movb %s(%%rip), %sb\n", sym, registers_list[reg]);
+        break;
+    case ET_INT:
+        fprintf(asm_stream, "movl %s(%%rip), %sd\n", sym, registers_list[reg]);
+        break;
+    case ET_LONG:
+        fprintf(asm_stream, "movq %s(%%rip), %s\n", sym, registers_list[reg]);
+        break;
+    default:
+        break;
+    }
 
     return reg;
 }

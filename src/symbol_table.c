@@ -9,6 +9,10 @@
 static struct symbol syms[NSYMBOLS];
 static uint32_t      syms_len = 0;
 
+uint32_t get_symbol_table_len() {
+    return syms_len;
+}
+
 bool set_symbol_etype(int id, enum EXPRESSION_TYPE t) {
     if (id < syms_len) {
         syms[id].etype = t;

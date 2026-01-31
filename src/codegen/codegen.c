@@ -1,6 +1,5 @@
 #include "codegen/codegen.h"
 #include "defs.h"
-#include "parser/utils.h"
 #include "utils.h"
 #include "codegen/asm_file.h"
 #include "codegen/x86/cg.h"
@@ -164,7 +163,7 @@ static int ast_walker_expression(struct ast_node *node) {
             BREAKPOINT;
         }
 
-        return cg_load_globl(sym_name);
+        return cg_load_globl(sym_name, node->data_type);
     }
 
     return NO_REG;
@@ -225,14 +224,8 @@ static void ast_walker_assignment(struct ast_node *node) {
         BREAKPOINT;
     }
 
-    enum EXPRESSION_TYPE sym_etype = get_symbol_etype(node->right->value.id);
-    if (sym_etype == ET_NONE) {
-        fprintf(stderr, "Codegen failed: symbol type not found\n");
-        BREAKPOINT;
-    }
-
     int r = ast_walker_expression(node->left);
-    cg_store_globl(r, sym_name, sym_etype);
+    cg_store_globl(r, sym_name, node->data_type);
     reg_free_all();
 }
 

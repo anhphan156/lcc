@@ -1,0 +1,37 @@
+int r;
+int c;
+
+vacuum rec() {
+	r = r * (c - 1);
+	c = c - 1;
+	si (c > 1) {
+		rec();
+	} alioquin {
+		scribe r;
+	}
+}
+
+vacuum main() {
+	int a;
+	int b;
+	int c;
+
+	a = 0;
+	b = 1;
+	pro (c = 0; c < 200; c = a + b) {
+		a = b;
+		b = c;
+		scribe c;
+	}
+
+	literra d;
+	d = 250;
+	dum (d != 0) {
+		scribe 999999;
+		d = d + 1;
+	}
+
+	c = 7;
+	r = c;
+	rec();
+}

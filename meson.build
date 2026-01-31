@@ -20,6 +20,7 @@ lcc = executable(
   'src/parser/identifier.c',
   'src/parser/utils.c',
   'src/sema/type_pass.c',
+  'src/sema/declaration_order_pass.c',
   'src/ast/ast_visualizer.c',
   'src/ast/ast.c',
   'src/lowering/pre_codegen.c',
@@ -54,6 +55,7 @@ foreach t : [
   ['test12', 'input_12', 'expected_12'],
   ['test13', 'input_13', 'expected_13'],
   ['test14', 'input_14', 'expected_14'],
+  ['test15', 'input_15', 'expected_15'],
 ]
 test(
   t[0],

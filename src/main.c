@@ -4,6 +4,7 @@
 #include "codegen/asm_file.h"
 #include "lexer/lexer.h"
 #include "parser/parser.h"
+#include "sema/declaration_order_pass.h"
 #include "sema/type_pass.h"
 #include "symbol_table.h"
 #include "sys/types.h"
@@ -34,6 +35,9 @@ int main(int argc, char **argv) {
 
     bool      is_type_valid = false;
     AstArray *aa            = ast_parse();
+
+    referencing_pass_setup();
+
     for (size_t i = 0; i < aa->len; i += 1) {
         struct ast_node *ast = aa->item[i];
         if (!ast) {
@@ -48,6 +52,8 @@ int main(int argc, char **argv) {
         pre_codegen(ast);
         generate_code(ast);
     }
+
+    referencing_pass_clean();
 
     for (size_t i = 0; i < aa->len; i += 1) {
         ast_clean(aa->item[i]);

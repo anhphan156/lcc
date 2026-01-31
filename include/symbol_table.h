@@ -4,6 +4,7 @@
 #include "defs.h"
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 struct symbol {
     char                *name;
@@ -14,6 +15,7 @@ struct symbol {
 const char          *get_symbol_name(int);
 enum STRUCTURE_TYPE  get_symbol_stype(int);
 enum EXPRESSION_TYPE get_symbol_etype(int);
+uint32_t             get_symbol_table_len();
 bool                 set_symbol_etype(int, enum EXPRESSION_TYPE);
 bool                 set_symbol_stype(int, enum STRUCTURE_TYPE);
 int                  find_symbol(const char *);

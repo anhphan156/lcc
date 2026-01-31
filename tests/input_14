@@ -1,8 +1,7 @@
 int a;
 
-vacuum main() {
-	a = 10;
-	rec();
+vacuum test() {
+	scribe a * 100;
 }
 
 vacuum rec() {
@@ -14,6 +13,7 @@ vacuum rec() {
 	}
 }
 
-vacuum test() {
-	scribe a * 100;
+vacuum main() {
+	a = 10;
+	rec();
 }
