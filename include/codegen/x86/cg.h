@@ -1,6 +1,7 @@
 #ifndef _X86CG_H
 #define _X86CG_H
 
+#include "defs.h"
 #include <stdint.h>
 
 void preamble();
@@ -22,7 +23,7 @@ int  cg_compare_set(int, int, const char *);
 void cg_test_jmp(int, int);
 void cg_globl_sym(const char *, uint8_t);
 void cg_label(int);
-void cg_store_globl(int, const char *);
+void cg_store_globl(int, const char *, enum EXPRESSION_TYPE);
 int  cg_load_globl(const char *);
 
 void reg_free_all(void);

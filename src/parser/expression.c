@@ -2,9 +2,8 @@
 #include "ast/ast.h"
 #include "lexer/lexer.h"
 #include "parser/identifier.h"
+#include "parser/utils.h"
 #include "token.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 static struct ast_node *logical_or();
 static struct ast_node *logical_and();
@@ -102,26 +101,15 @@ static struct ast_node *unary() {
 }
 
 static struct ast_node *primary() {
-    struct token previous_token;
-    if (match(T_INTLIT)) {
-        previous_token = get_previous_token();
-        return mk_leaf(AST_INTEGER, previous_token.type, previous_token.value);
+    if (match(T_INTLIT) || match(T_DOUBLELIT)) {
+        struct token previous_token = get_previous_token();
+        return mk_leaf(AST_LITERAL_NUMBER, previous_token.type, previous_token.value);
     }
 
-    if (match(T_DOUBLELIT)) {
-        previous_token = get_previous_token();
-        return mk_leaf(AST_DOUBLE, previous_token.type, previous_token.value);
-    }
-
-    if (match(T_LPAREN)) {
+    if (get_current_token().type == T_LPAREN) {
+        l_paren();
         struct ast_node *expr = expression();
-        if (!match(T_RPAREN)) {
-            struct token current_token = get_current_token();
-            printf("Expected token: `)` on line %d\n", current_token.line);
-            exit(1);
-            return NULL;
-        }
-
+        r_paren();
         return mk_node(AST_GROUPING, T_LPAREN, expr, NULL);
     }
 

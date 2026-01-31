@@ -2,8 +2,10 @@
 #define _DEFS_H
 
 enum STRUCTURE_TYPE {
+    ST_NONE,
     ST_VARIABLE,
     ST_FUNCTION,
+    ST_LITERAL,
 };
 
 enum EXPRESSION_TYPE {

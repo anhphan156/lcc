@@ -1,4 +1,5 @@
 #include "symbol_table.h"
+#include "defs.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,7 +32,15 @@ enum STRUCTURE_TYPE get_symbol_stype(int id) {
         return syms[id].stype;
     }
 
-    return -1;
+    return ST_NONE;
+}
+
+enum EXPRESSION_TYPE get_symbol_etype(int id) {
+    if (id < syms_len) {
+        return syms[id].etype;
+    }
+
+    return ET_NONE;
 }
 
 const char *get_symbol_name(int id) {

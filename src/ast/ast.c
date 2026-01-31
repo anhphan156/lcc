@@ -12,6 +12,7 @@ struct ast_node *mk_node(enum AST_NODE_TYPE ast_node_type, enum TOKEN_TYPE token
     }
     node->ast_node_type = ast_node_type;
     node->token_type    = token_type;
+    node->data_type     = ET_NONE;
     node->left          = left;
     node->right         = right;
 
@@ -30,6 +31,7 @@ struct ast_node *mk_leaf(enum AST_NODE_TYPE type, enum TOKEN_TYPE token_type, un
     }
     node->ast_node_type = type;
     node->token_type    = token_type;
+    node->data_type     = ET_NONE;
     node->value         = value;
     node->left          = NULL;
     node->right         = NULL;

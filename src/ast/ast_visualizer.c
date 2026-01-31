@@ -118,7 +118,7 @@ static uint32_t ast_walker(struct ast_node *node) {
             fprintf(dot_file, "%d [label = \"un[!]\"];", node_id);
     }
 
-    if (node->ast_node_type == AST_INTEGER) {
+    if (node->ast_node_type == AST_LITERAL_NUMBER) {
         fprintf(dot_file, "%d [label = %ld];", node_id, node->value.intval);
     }
 

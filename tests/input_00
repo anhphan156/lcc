@@ -1,26 +1,40 @@
-int a;
-
-vacuum main() {
-	a = 10;
-	rec();
-
-	int b;
-	pro (b = 0; b < 5; b = b + 1) {
-		scribe b;
-	}
-
-	a;
-}
+int r;
+int c;
 
 vacuum rec() {
-	test();
-	a = a - 1;
-
-	si (a > 0) {
+	r = r * (c - 1);
+	c = c - 1;
+	si (c > 1) {
 		rec();
 	}
 }
 
-vacuum test() {
-	scribe a * 100;
+vacuum main() {
+	int a;
+	int b;
+	int c;
+
+	a = 0;
+	b = 1;
+	pro (c = 0; c < 200; c = a + b) {
+		a = b;
+		b = c;
+		scribe c;
+	}
+
+	literra d;
+	d = 250;
+	dum (d != 0) {
+		si ( a * 2 > 10) {
+			scribe 999999;
+		} alioquin {
+			scribe 888888;
+		}
+		d = d + 1;
+	}
+
+	c = 7;
+	r = c;
+	rec();
+	scribe r;
 }

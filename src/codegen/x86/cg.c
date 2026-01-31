@@ -1,5 +1,6 @@
 #include "codegen/x86/cg.h"
 #include "codegen/asm_file.h"
+#include "defs.h"
 #include "utils.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -256,12 +257,24 @@ void cg_label(int id) {
     fprintf(asm_stream, "L%d:\n", id);
 }
 
-void cg_store_globl(int reg, const char *sym) {
+void cg_store_globl(int reg, const char *sym, enum EXPRESSION_TYPE size) {
     FILE *asm_stream = asmfget();
     if (asm_stream == NULL)
         return;
 
-    fprintf(asm_stream, "movq %s, %s(%%rip)\n", registers_list[reg], sym);
+    switch (size) {
+    case ET_CHAR:
+        fprintf(asm_stream, "movb %sb, %s(%%rip)\n", registers_list[reg], sym);
+        break;
+    case ET_INT:
+        fprintf(asm_stream, "movl %sd, %s(%%rip)\n", registers_list[reg], sym);
+        break;
+    case ET_LONG:
+        fprintf(asm_stream, "movq %s, %s(%%rip)\n", registers_list[reg], sym);
+        break;
+    default:
+        break;
+    }
     reg_free(reg);
 }
 
