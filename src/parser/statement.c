@@ -1,7 +1,7 @@
 #include "parser/statement.h"
 #include "ast/ast.h"
 #include "defs.h"
-#include "lexer.h"
+#include "lexer/lexer.h"
 #include "parser/declaration.h"
 #include "parser/expression.h"
 #include "parser/identifier.h"

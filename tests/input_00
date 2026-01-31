@@ -9,7 +9,7 @@ vacuum main() {
 		scribe b;
 	}
 
-	a();
+	a;
 }
 
 vacuum rec() {

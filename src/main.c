@@ -1,9 +1,10 @@
 #include "ast/ast_visualizer.h"
-#include "ast/prepass.h"
+#include "lowering/pre_codegen.h"
 #include "codegen/codegen.h"
 #include "codegen/asm_file.h"
-#include "lexer.h"
+#include "lexer/lexer.h"
 #include "parser/parser.h"
+#include "sema/type_pass.h"
 #include "symbol_table.h"
 #include "sys/types.h"
 #include "sys/wait.h"
@@ -19,10 +20,9 @@ static char *read_file(const char *, size_t *);
 static void  close_file(char *, size_t);
 
 int main(int argc, char **argv) {
-    char *src_file_path = argv[optind++];
-
-    size_t src_len = 0;
-    char  *src     = read_file(src_file_path, &src_len);
+    char  *src_file_path = argv[optind++];
+    size_t src_len       = 0;
+    char  *src           = read_file(src_file_path, &src_len);
 
     const char *asm_file_path = "code.s";
     asmfopen(asm_file_path);
@@ -32,38 +32,51 @@ int main(int argc, char **argv) {
 
     lexical_scanner_setup(src, src_len);
 
-    AstArray *aa = ast_parse();
+    bool      is_type_valid = false;
+    AstArray *aa            = ast_parse();
     for (size_t i = 0; i < aa->len; i += 1) {
         struct ast_node *ast = aa->item[i];
+        if (!ast) {
+            break;
+        }
         write_dot_graph(ast, i);
-        prepass(ast);
+
+        if (!(is_type_valid = type_validator(ast))) {
+            break;
+        }
+
+        pre_codegen(ast);
         generate_code(ast);
-        ast_clean(ast);
+    }
+
+    for (size_t i = 0; i < aa->len; i += 1) {
+        ast_clean(aa->item[i]);
     }
     free(aa->item);
-
     close_dot_graph();
     asmfclose();
     clean_symbol_table();
     close_file(src, src_len);
 
-    pid_t pid = fork();
-    if (pid == -1) {
-        perror("fork");
-        goto main_end;
-    } else if (pid == 0) {
-        int ret = execlp("gcc", "gcc", "-g", "-o", "out", asm_file_path, NULL);
-        if (ret == -1) {
-            perror("execvl");
+    if (is_type_valid) {
+        pid_t pid = fork();
+        if (pid == -1) {
+            perror("fork");
             goto main_end;
+        } else if (pid == 0) {
+            int ret = execlp("gcc", "gcc", "-g", "-o", "out", asm_file_path, NULL);
+            if (ret == -1) {
+                perror("execvl");
+                goto main_end;
+            }
         }
+
+        int status;
+        waitpid(pid, &status, 0);
     }
 
-    int status;
-    waitpid(pid, &status, 0);
-
 main_end:
-    return 0;
+    return is_type_valid ? 0 : 1;
 }
 
 static char *read_file(const char *path, size_t *buffer_length) {

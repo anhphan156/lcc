@@ -1,4 +1,4 @@
-#include "lexer.h"
+#include "lexer/lexer.h"
 #include "symbol_table.h"
 #include "token.h"
 #include <ctype.h>

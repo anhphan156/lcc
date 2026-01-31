@@ -1,7 +1,6 @@
 #include "parser/utils.h"
-#include "lexer.h"
+#include "lexer/lexer.h"
 #include "token.h"
-#include "utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 

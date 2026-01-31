@@ -7,8 +7,8 @@ endif
 lcc = executable(
   'lcc', 
   'src/main.c',
-  'src/lexer.c',
   'src/utils.c',
+  'src/lexer/lexer.c',
   'src/symbol_table.c',
   'src/codegen/codegen.c',
   'src/codegen/x86/cg.c',
@@ -19,9 +19,10 @@ lcc = executable(
   'src/parser/declaration.c',
   'src/parser/identifier.c',
   'src/parser/utils.c',
+  'src/sema/type_pass.c',
   'src/ast/ast_visualizer.c',
-  'src/ast/prepass.c',
   'src/ast/ast.c',
+  'src/lowering/pre_codegen.c',
   include_directories: 'include',
   install: true,
 )

@@ -1,35 +1,20 @@
-#include "ast/prepass.h"
+#include "lowering/pre_codegen.h"
 #include "ast/ast.h"
 #include "codegen/codegen.h"
-#include "defs.h"
 #include "symbol_table.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-void prepass(struct ast_node *node) {
+void pre_codegen(struct ast_node *node) {
     if (!node)
         return;
 
     if (node->left)
-        prepass(node->left);
+        pre_codegen(node->left);
 
     if (node->right)
-        prepass(node->right);
-
-    if (node->ast_node_type == AST_FUNC_CALL) {
-        enum STRUCTURE_TYPE symbol_stype = get_symbol_stype(node->value.id);
-        if (symbol_stype == -1) {
-            fprintf(stderr, "Prepass failed: symbol not found\n");
-            exit(1);
-        }
-
-        const char *symbol_name = get_symbol_name(node->value.id);
-        if (symbol_stype != ST_FUNCTION) {
-            fprintf(stderr, "Prepass failed: identifier `%s` is not a function\n", symbol_name);
-            exit(1);
-        }
-    }
+        pre_codegen(node->right);
 
     if (node->ast_node_type == AST_DECL) {
         if (node->token_type == T_VOID) {
