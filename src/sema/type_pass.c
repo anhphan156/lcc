@@ -32,12 +32,19 @@ static bool tree_walker(struct ast_node *node) {
             return false;
         }
 
+        enum EXPRESSION_TYPE et = get_symbol_etype(node->value.id);
+        if (et == ET_NONE) {
+            fprintf(stderr, "Type check failed: symbol `%s` doesn't have a type\n", symbol_name);
+            return false;
+        }
+
         if (check_declaration(node->value.id)) {
             fprintf(stderr, "Type check failed: redeclaration of symbol `%s`\n", symbol_name);
             return false;
         }
 
         set_declaration(node->value.id);
+        node->data_type = et;
     }
 
     if (node->ast_node_type == AST_LVALUE || node->ast_node_type == AST_IDENTIFIER || node->ast_node_type == AST_FUNC_CALL) {
@@ -72,7 +79,11 @@ static bool tree_walker(struct ast_node *node) {
                 return false;
             }
 
-            type_promotion_r(&node->right->data_type, &node->left->data_type);
+            if (!type_promotion_r(&node->right->data_type, &node->left->data_type)) {
+                fprintf(stderr, "Type checking: assign void expression to non-void symbol\n");
+                return false;
+            }
+
             node->data_type = node->right->data_type;
         case T_IF:
             if (node->left->data_type == ET_VOID || node->left->data_type == ET_NONE) {
@@ -85,11 +96,14 @@ static bool tree_walker(struct ast_node *node) {
     }
 
     if (node->ast_node_type == AST_BIN_OP) {
-        type_promotion_lr(&node->left->data_type, &node->right->data_type);
+        if (!type_promotion_lr(&node->left->data_type, &node->right->data_type)) {
+            fprintf(stderr, "Type checking: binary operation of one or more void values\n");
+            return false;
+        }
         node->data_type = node->left->data_type;
     }
 
-    if (node->ast_node_type == AST_UN_OP || node->ast_node_type == AST_GROUPING) {
+    if (node->ast_node_type == AST_UN_OP || node->ast_node_type == AST_GROUPING || node->ast_node_type == AST_FUNC) {
         node->data_type = node->left->data_type;
     }
 
@@ -141,6 +155,9 @@ static bool type_promotion_lr(enum EXPRESSION_TYPE *left, enum EXPRESSION_TYPE *
 }
 
 static bool type_promotion_r(const enum EXPRESSION_TYPE *left, enum EXPRESSION_TYPE *right) {
+    if (*right == ET_VOID)
+        return false;
+
     *right = *left;
 
     return true;

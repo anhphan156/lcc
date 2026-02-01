@@ -53,7 +53,11 @@ static uint32_t ast_walker(struct ast_node *node) {
 
     if (node->ast_node_type == AST_STMT) {
         if (node->token_type == T_PRINT) {
-            fprintf(dot_file, "%d [label = scribe];", node_id);
+            fprintf(dot_file, "%d [label = print];", node_id);
+        }
+
+        if (node->token_type == T_RETURN) {
+            fprintf(dot_file, "%d [label = return];", node_id);
         }
 
         if (node->token_type == T_EQ) {

@@ -1,5 +1,6 @@
 #include "parser/declaration.h"
 #include "ast/ast.h"
+#include "data_table/function_table.h"
 #include "defs.h"
 #include "lexer/lexer.h"
 #include "parser/statement.h"

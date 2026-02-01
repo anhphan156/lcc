@@ -7,8 +7,10 @@
 void preamble();
 void fn_preamble(const char *);
 void fn_postamble();
-void cg_call(const char *);
+void cg_call_stmt(const char *);
+int  cg_call_expr(const char *);
 void cg_print(int);
+void cg_return(int);
 int  cg_load(int);
 int  cg_add(int, int);
 int  cg_sub(int, int);

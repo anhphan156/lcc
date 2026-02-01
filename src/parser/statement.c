@@ -17,6 +17,7 @@ static struct ast_node *if_statement();
 static struct ast_node *for_statement();
 static struct ast_node *while_statement();
 static struct ast_node *print_statement();
+static struct ast_node *return_statement();
 static struct ast_node *local_var_declaration();
 
 struct ast_node *statements_block() {
@@ -67,6 +68,11 @@ static struct ast_node *statement() {
 
     if (current_token.type == T_PRINT) {
         stmt = print_statement();
+        semicolon();
+        return stmt;
+    }
+    if (current_token.type == T_RETURN) {
+        stmt = return_statement();
         semicolon();
         return stmt;
     }
@@ -141,6 +147,15 @@ static struct ast_node *if_statement() {
 static struct ast_node *print_statement() {
     match(T_PRINT);
     return mk_node(AST_STMT, T_PRINT, expression(), NULL);
+}
+
+static struct ast_node *return_statement() {
+    match(T_RETURN);
+    if (get_current_token().type == T_SEMICOLON) {
+        return mk_leaf(AST_STMT, T_RETURN, (union token_literal){0});
+    }
+
+    return mk_node(AST_STMT, T_RETURN, expression(), NULL);
 }
 
 static struct ast_node *local_var_declaration() {

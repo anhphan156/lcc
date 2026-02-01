@@ -1,8 +1,9 @@
-vacuum main(int a) {
-	literra d;
-	d = 250;
-	dum (d != 0) {
-		scribe 999999;
-		d = d + 1;
-	}
+int test() {
+	redeo 22;
+}
+
+vacuum main() {
+	int i;
+	i = 34;
+	scribe i + test() + test() * 2 / test();
 }

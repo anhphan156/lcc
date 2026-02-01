@@ -1,4 +1,5 @@
 #include "data_table/symbol_table.h"
+#include "data_table/function_table.h"
 #include "defs.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -75,9 +76,13 @@ uint32_t add_symbol(const char *name) {
         return i;
     }
 
-    syms[syms_len].name  = strdup(name);
-    syms[syms_len].etype = 0;
-    syms[syms_len].stype = 0;
+    syms[syms_len].name                    = strdup(name);
+    syms[syms_len].etype                   = 0;
+    syms[syms_len].stype                   = 0;
+    syms[syms_len].function_info.args_cap  = 10;
+    syms[syms_len].function_info.args_len  = 0;
+    syms[syms_len].function_info.args_type = 0;
+    syms[syms_len].function_info.ret_type  = 0;
 
     return syms_len++;
 }
@@ -88,5 +93,26 @@ void clean_symbol_table() {
         if (name) {
             free(name);
         }
+        if (syms[i].function_info.args_type) {
+            free(syms[i].function_info.args_type);
+        }
     }
+}
+
+void add_function_arg(uint32_t id, enum EXPRESSION_TYPE et) {
+    if (id >= syms_len) {
+        return;
+    }
+
+    struct function_info fi = syms[id].function_info;
+    if (!fi.args_type) {
+        fi.args_type = (enum EXPRESSION_TYPE *)malloc(sizeof(enum EXPRESSION_TYPE) * fi.args_cap);
+    }
+
+    if (fi.args_len >= fi.args_cap) {
+        fi.args_type = (enum EXPRESSION_TYPE *)realloc(fi.args_type, sizeof(enum EXPRESSION_TYPE) * fi.args_cap);
+    }
+
+    fi.args_type[fi.args_len] = et;
+    fi.args_len += 1;
 }

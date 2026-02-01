@@ -1,4 +1,5 @@
 #include "codegen/codegen.h"
+#include "defs.h"
 #include "utils.h"
 #include "codegen/asm_file.h"
 #include "codegen/x86/cg.h"
@@ -17,6 +18,7 @@ static void ast_walker_if(struct ast_node *);
 static void ast_walker_while(struct ast_node *);
 static void ast_walker_assignment(struct ast_node *);
 static void ast_walker_print(struct ast_node *);
+static void ast_walker_return(struct ast_node *);
 static int  label(void);
 
 void asm_preamble() {
@@ -47,7 +49,7 @@ static void ast_walker(struct ast_node *node) {
             exit(1);
         }
 
-        return cg_call(sym_name);
+        return cg_call_stmt(sym_name);
     }
 
     if (node->ast_node_type == AST_FUNC) {
@@ -58,7 +60,9 @@ static void ast_walker(struct ast_node *node) {
         }
         fn_preamble(symbol_name);
         ast_walker(node->right);
-        fn_postamble();
+        if (node->data_type == ET_VOID) {
+            fn_postamble();
+        }
 
         return;
     }
@@ -76,6 +80,8 @@ static void ast_walker(struct ast_node *node) {
             return ast_walker_assignment(node);
         case T_PRINT:
             return ast_walker_print(node);
+        case T_RETURN:
+            return ast_walker_return(node);
         default:
             return;
         }
@@ -103,6 +109,16 @@ static int ast_walker_expression(struct ast_node *node) {
 
     if (node->right) {
         right_reg = ast_walker_expression(node->right);
+    }
+
+    if (node->ast_node_type == AST_FUNC_CALL) {
+        const char *sym_name = get_symbol_name(node->value.id);
+        if (sym_name == NULL) {
+            fprintf(stderr, "funtion call failed: symbol_name not found\n");
+            exit(1);
+        }
+
+        return cg_call_expr(sym_name);
     }
 
     if (node->ast_node_type == AST_BIN_OP) {
@@ -230,6 +246,11 @@ static void ast_walker_assignment(struct ast_node *node) {
 
 static void ast_walker_print(struct ast_node *node) {
     cg_print(ast_walker_expression(node->left));
+}
+
+static void ast_walker_return(struct ast_node *node) {
+    int expr_reg = ast_walker_expression(node->left);
+    cg_return(expr_reg);
 }
 
 static int label(void) {

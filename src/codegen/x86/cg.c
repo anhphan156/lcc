@@ -47,12 +47,29 @@ void fn_postamble() {
                         "ret\n");
 }
 
-void cg_call(const char *name) {
+void cg_call_stmt(const char *name) {
     FILE *asm_stream = asmfget();
     if (asm_stream == NULL)
         return;
 
     fprintf(asm_stream, "call %s\n", name);
+}
+
+int cg_call_expr(const char *name) {
+    FILE *asm_stream = asmfget();
+    if (asm_stream == NULL)
+        return -1;
+
+    int r = reg_alloc();
+    if (r == -1) {
+        fprintf(stderr, "cg_load: can't allocate register\n");
+        BREAKPOINT;
+    }
+
+    fprintf(asm_stream, "call %s\n", name);
+    fprintf(asm_stream, "movq %%rax, %s\n", registers_list[r]);
+
+    return r;
 }
 
 int cg_add(int r1, int r2) {
@@ -231,6 +248,17 @@ void cg_print(int reg) {
             registers_list[reg]);
 
     reg_free_all();
+}
+
+void cg_return(int r) {
+    FILE *asm_stream = asmfget();
+    if (asm_stream == NULL)
+        return;
+
+    fprintf(asm_stream, "movq %s, %%rax\n", registers_list[r]);
+    fprintf(asm_stream, "leave\nret\n");
+
+    reg_free(r);
 }
 
 int cg_load(int v) {

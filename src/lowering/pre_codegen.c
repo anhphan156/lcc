@@ -10,6 +10,13 @@ void pre_codegen(struct ast_node *node) {
     if (!node)
         return;
 
+    if (node->ast_node_type == AST_FUNC) {
+        if (node->right) {
+            pre_codegen(node->right);
+        }
+        return;
+    }
+
     if (node->left)
         pre_codegen(node->left);
 
