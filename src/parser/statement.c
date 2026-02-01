@@ -6,7 +6,7 @@
 #include "parser/expression.h"
 #include "parser/identifier.h"
 #include "parser/utils.h"
-#include "symbol_table.h"
+#include "data_table/symbol_table.h"
 #include "token.h"
 #include <stdbool.h>
 #include <stdio.h>
@@ -17,7 +17,7 @@ static struct ast_node *if_statement();
 static struct ast_node *for_statement();
 static struct ast_node *while_statement();
 static struct ast_node *print_statement();
-static struct ast_node *variable_declaration();
+static struct ast_node *local_var_declaration();
 
 struct ast_node *statements_block() {
     if (!match(T_LBRACE)) {
@@ -30,6 +30,11 @@ struct ast_node *statements_block() {
     struct ast_node *stmt;
     while ((stmt = statement()) != NULL) {
         block = mk_node(AST_STMTS_BLOCK, 0, block, stmt);
+    }
+
+    if (!block) {
+        // empty block
+        block = mk_node(AST_STMTS_BLOCK, 0, NULL, NULL);
     }
 
     if (!match(T_RBRACE)) {
@@ -73,7 +78,7 @@ static struct ast_node *statement() {
     }
 
     if ((is_type_token(current_token.type))) {
-        stmt = variable_declaration();
+        stmt = local_var_declaration();
         semicolon();
         return stmt;
     }
@@ -138,11 +143,10 @@ static struct ast_node *print_statement() {
     return mk_node(AST_STMT, T_PRINT, expression(), NULL);
 }
 
-static struct ast_node *variable_declaration() {
-    struct token    current_token = get_current_token();
-    enum TOKEN_TYPE type_token    = current_token.type;
+static struct ast_node *local_var_declaration() {
+    match_type();
+    enum TOKEN_TYPE type_token = get_previous_token().type;
 
-    match(type_token);
     identifier();
 
     struct token id_token = get_previous_token();

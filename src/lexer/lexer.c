@@ -1,5 +1,5 @@
 #include "lexer/lexer.h"
-#include "symbol_table.h"
+#include "data_table/symbol_table.h"
 #include "token.h"
 #include <ctype.h>
 #include <stdint.h>
@@ -151,6 +151,31 @@ bool match(enum TOKEN_TYPE token_type) {
     return false;
 }
 
+bool match_type() {
+    switch (current_token.type) {
+    case T_CHAR:
+    case T_INT:
+    case T_LONG:
+        previous_token = current_token;
+        lexical_next();
+        return true;
+    default:
+        break;
+    }
+
+    return false;
+}
+
+bool match_type_with_void() {
+    if (current_token.type == T_VOID) {
+        previous_token = current_token;
+        lexical_next();
+        return true;
+    }
+
+    return match_type();
+}
+
 struct token get_current_token() {
     return current_token;
 }
@@ -278,6 +303,9 @@ static void parse_identifier(uint32_t first_char_index) {
         break;
     case 'p':
         valid_keyword = add_keyword(T_FOR, "pro");
+        break;
+    case 'r':
+        valid_keyword = add_keyword(T_RETURN, "redeo");
         break;
     case 's':
         if (second_char == 'c') {

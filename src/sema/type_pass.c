@@ -2,7 +2,7 @@
 #include "ast/ast.h"
 #include "defs.h"
 #include "sema/declaration_order_pass.h"
-#include "symbol_table.h"
+#include "data_table/symbol_table.h"
 #include "token.h"
 #include "utils.h"
 #include <stdio.h>
@@ -28,22 +28,28 @@ static bool tree_walker(struct ast_node *node) {
     if (node->ast_node_type == AST_DECL) {
         const char *symbol_name = get_symbol_name(node->value.id);
         if (!symbol_name) {
-            fprintf(stderr, "Prepass failed: symbol not found\n");
+            fprintf(stderr, "Type check failed: symbol not found\n");
             return false;
         }
+
+        if (check_declaration(node->value.id)) {
+            fprintf(stderr, "Type check failed: redeclaration of symbol `%s`\n", symbol_name);
+            return false;
+        }
+
         set_declaration(node->value.id);
     }
 
     if (node->ast_node_type == AST_LVALUE || node->ast_node_type == AST_IDENTIFIER || node->ast_node_type == AST_FUNC_CALL) {
         const char *symbol_name = get_symbol_name(node->value.id);
         if (!symbol_name) {
-            fprintf(stderr, "Prepass failed: symbol not found\n");
+            fprintf(stderr, "Type check failed: symbol not found\n");
             return false;
         }
 
         enum EXPRESSION_TYPE et = get_symbol_etype(node->value.id);
         if (et == ET_NONE) {
-            fprintf(stderr, "Prepass failed: symbol `%s` doesn't have a type\n", symbol_name);
+            fprintf(stderr, "Type check failed: symbol `%s` doesn't have a type\n", symbol_name);
             return false;
         }
 
@@ -104,12 +110,12 @@ static bool tree_walker(struct ast_node *node) {
     if (node->ast_node_type == AST_FUNC_CALL) {
         const char *symbol_name = get_symbol_name(node->value.id);
         if (!symbol_name) {
-            fprintf(stderr, "Prepass failed: symbol not found\n");
+            fprintf(stderr, "Type check failed: symbol not found\n");
         }
 
         enum STRUCTURE_TYPE symbol_stype = get_symbol_stype(node->value.id);
         if (symbol_stype != ST_FUNCTION) {
-            fprintf(stderr, "Prepass failed: identifier `%s` is not a function\n", symbol_name);
+            fprintf(stderr, "Type check failed: identifier `%s` is not a function\n", symbol_name);
             return false;
         }
     }
@@ -135,9 +141,7 @@ static bool type_promotion_lr(enum EXPRESSION_TYPE *left, enum EXPRESSION_TYPE *
 }
 
 static bool type_promotion_r(const enum EXPRESSION_TYPE *left, enum EXPRESSION_TYPE *right) {
-    if (*left == ET_INT && *right == ET_CHAR) {
-        *right = ET_INT;
-    }
+    *right = *left;
 
     return true;
 }

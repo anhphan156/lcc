@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 #define MAX_REG 4
-static char *registers_list[MAX_REG]  = {"%r8", "%r9", "%r10", "%r11"};
+static char *registers_list[MAX_REG]  = {"%r12", "%r13", "%r14", "%r15"};
 static char  registers_avail[MAX_REG] = {0};
 
 static int  reg_alloc(void);
@@ -289,6 +289,7 @@ int cg_load_globl(const char *sym, enum EXPRESSION_TYPE size) {
         BREAKPOINT;
     }
 
+    fprintf(asm_stream, "xor %s, %s\n", registers_list[reg], registers_list[reg]);
     switch (size) {
     case ET_CHAR:
         fprintf(asm_stream, "movb %s(%%rip), %sb\n", sym, registers_list[reg]);

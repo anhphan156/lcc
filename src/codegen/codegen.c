@@ -1,10 +1,9 @@
 #include "codegen/codegen.h"
-#include "defs.h"
 #include "utils.h"
 #include "codegen/asm_file.h"
 #include "codegen/x86/cg.h"
 #include "ast/ast.h"
-#include "symbol_table.h"
+#include "data_table/symbol_table.h"
 #include "token.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -37,9 +36,9 @@ void gen_globl_sym(const char *symbol_name, uint8_t size) {
 }
 
 static void ast_walker(struct ast_node *node) {
-    if (node->ast_node_type == AST_DECL) {
+
+    if (node->ast_node_type == AST_DECL)
         return;
-    }
 
     if (node->ast_node_type == AST_FUNC_CALL) {
         const char *sym_name = get_symbol_name(node->value.id);

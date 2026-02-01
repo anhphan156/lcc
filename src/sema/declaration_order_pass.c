@@ -1,6 +1,6 @@
 #include "sema/declaration_order_pass.h"
 #include "string.h"
-#include "symbol_table.h"
+#include "data_table/symbol_table.h"
 #include <stdio.h>
 #include <stdlib.h>
 

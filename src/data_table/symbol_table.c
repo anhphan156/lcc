@@ -1,4 +1,4 @@
-#include "symbol_table.h"
+#include "data_table/symbol_table.h"
 #include "defs.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -13,7 +13,7 @@ uint32_t get_symbol_table_len() {
     return syms_len;
 }
 
-bool set_symbol_etype(int id, enum EXPRESSION_TYPE t) {
+bool set_symbol_etype(uint32_t id, enum EXPRESSION_TYPE t) {
     if (id < syms_len) {
         syms[id].etype = t;
         return true;
@@ -22,7 +22,7 @@ bool set_symbol_etype(int id, enum EXPRESSION_TYPE t) {
     return false;
 }
 
-bool set_symbol_stype(int id, enum STRUCTURE_TYPE t) {
+bool set_symbol_stype(uint32_t id, enum STRUCTURE_TYPE t) {
     if (id < syms_len) {
         syms[id].stype = t;
         return true;
@@ -31,7 +31,7 @@ bool set_symbol_stype(int id, enum STRUCTURE_TYPE t) {
     return false;
 }
 
-enum STRUCTURE_TYPE get_symbol_stype(int id) {
+enum STRUCTURE_TYPE get_symbol_stype(uint32_t id) {
     if (id < syms_len) {
         return syms[id].stype;
     }
@@ -39,7 +39,7 @@ enum STRUCTURE_TYPE get_symbol_stype(int id) {
     return ST_NONE;
 }
 
-enum EXPRESSION_TYPE get_symbol_etype(int id) {
+enum EXPRESSION_TYPE get_symbol_etype(uint32_t id) {
     if (id < syms_len) {
         return syms[id].etype;
     }
@@ -47,7 +47,7 @@ enum EXPRESSION_TYPE get_symbol_etype(int id) {
     return ET_NONE;
 }
 
-const char *get_symbol_name(int id) {
+const char *get_symbol_name(uint32_t id) {
     if (id < syms_len) {
         return syms[id].name;
     }
@@ -55,7 +55,7 @@ const char *get_symbol_name(int id) {
     return NULL;
 }
 
-int find_symbol(const char *name) {
+uint32_t find_symbol(const char *name) {
     for (uint32_t i = 0; i < syms_len; i += 1) {
         if (*name == *syms[i].name && !strcmp(name, syms[i].name)) {
             return i;
@@ -64,13 +64,13 @@ int find_symbol(const char *name) {
     return -1;
 }
 
-int add_symbol(const char *name) {
+uint32_t add_symbol(const char *name) {
     if (syms_len >= NSYMBOLS) {
         fprintf(stderr, "Symbol table out of space\n");
         exit(1);
     }
 
-    int i = 4;
+    uint32_t i = 4;
     if ((i = find_symbol(name)) != -1) {
         return i;
     }

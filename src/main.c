@@ -6,7 +6,7 @@
 #include "parser/parser.h"
 #include "sema/declaration_order_pass.h"
 #include "sema/type_pass.h"
-#include "symbol_table.h"
+#include "data_table/symbol_table.h"
 #include "sys/types.h"
 #include "sys/wait.h"
 #include <fcntl.h>
@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
 
     lexical_scanner_setup(src, src_len);
 
-    bool      is_type_valid = false;
+    bool      is_type_valid = true;
     AstArray *aa            = ast_parse();
 
     referencing_pass_setup();
@@ -43,14 +43,13 @@ int main(int argc, char **argv) {
         if (!ast) {
             break;
         }
+
         write_dot_graph(ast, i);
 
-        if (!(is_type_valid = type_validator(ast))) {
-            break;
+        if ((is_type_valid &= type_validator(ast))) {
+            pre_codegen(ast);
+            generate_code(ast);
         }
-
-        pre_codegen(ast);
-        generate_code(ast);
     }
 
     referencing_pass_clean();

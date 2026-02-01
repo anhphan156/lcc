@@ -1,5 +1,8 @@
-int a;
-vacuum main() {
-	a = 10;
-	scribe a;
+vacuum main(int a) {
+	literra d;
+	d = 250;
+	dum (d != 0) {
+		scribe 999999;
+		d = d + 1;
+	}
 }

@@ -1,7 +1,7 @@
 #include "lowering/pre_codegen.h"
 #include "ast/ast.h"
 #include "codegen/codegen.h"
-#include "symbol_table.h"
+#include "data_table/symbol_table.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
