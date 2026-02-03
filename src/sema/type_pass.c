@@ -1,6 +1,7 @@
 #include "sema/type_pass.h"
 #include "ast/ast.h"
 #include "defs.h"
+#include "parser/utils.h"
 #include "sema/declaration_order_pass.h"
 #include "data_table/symbol_table.h"
 #include "token.h"
@@ -47,7 +48,7 @@ static bool tree_walker(struct ast_node *node) {
         node->data_type = et;
     }
 
-    if (node->ast_node_type == AST_LVALUE || node->ast_node_type == AST_IDENTIFIER || node->ast_node_type == AST_FUNC_CALL) {
+    if (node->ast_node_type == AST_LVALUE || node->ast_node_type == AST_IDENTIFIER || node->ast_node_type == AST_DEREF || node->ast_node_type == AST_ADDR || node->ast_node_type == AST_FUNC_CALL) {
         const char *symbol_name = get_symbol_name(node->value.id);
         if (!symbol_name) {
             fprintf(stderr, "Type check failed: symbol not found\n");
@@ -77,6 +78,14 @@ static bool tree_walker(struct ast_node *node) {
                 fprintf(stderr, "Either side of assignment doesn't have a type\n");
                 BREAKPOINT;
                 return false;
+            }
+
+            if (is_ptr(node->right->data_type) && node->left->ast_node_type == AST_ADDR) {
+                if (ptr_to_prim(node->right->data_type) != node->left->data_type) {
+                    return false;
+                }
+                node->data_type = node->right->data_type;
+                break;
             }
 
             if (!type_promotion_r(&node->right->data_type, &node->left->data_type)) {

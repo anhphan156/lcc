@@ -15,4 +15,9 @@ void r_paren();
 enum EXPRESSION_TYPE get_expression_type(enum TOKEN_TYPE);
 bool                 is_type_token(enum TOKEN_TYPE);
 
+bool is_ptr(enum EXPRESSION_TYPE);
+
+enum EXPRESSION_TYPE prim_to_ptr(enum EXPRESSION_TYPE);
+enum EXPRESSION_TYPE ptr_to_prim(enum EXPRESSION_TYPE);
+
 #endif

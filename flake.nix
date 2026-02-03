@@ -15,6 +15,7 @@
         ninja
         llvmPackages.clang-tools
         valgrind
+        perf
         gdb
         graphviz
       ];

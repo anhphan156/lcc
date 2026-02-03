@@ -25,6 +25,7 @@ lcc = executable(
   'src/ast/ast_visualizer.c',
   'src/ast/ast.c',
   'src/lowering/pre_codegen.c',
+  'src/lowering/tacgen.c',
   include_directories: 'include',
   install: true,
 )
@@ -57,6 +58,7 @@ foreach t : [
   ['test13', 'input_13', 'expected_13'],
   ['test14', 'input_14', 'expected_14'],
   ['test15', 'input_15', 'expected_15'],
+  ['test16', 'input_16', 'expected_16'],
 ]
 test(
   t[0],

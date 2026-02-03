@@ -1,6 +1,5 @@
 #include "parser/declaration.h"
 #include "ast/ast.h"
-#include "data_table/function_table.h"
 #include "defs.h"
 #include "lexer/lexer.h"
 #include "parser/statement.h"
@@ -19,11 +18,16 @@ struct ast_node *top_level_declaration() {
 
     if (match_type_with_void()) {
         struct token type_token = get_previous_token();
+        bool         is_ptr     = match(T_STAR);
 
         identifier();
         struct token id_token = get_previous_token();
         set_symbol_stype(id_token.value.id, ST_VARIABLE);
-        set_symbol_etype(id_token.value.id, get_expression_type(type_token.type));
+        if (is_ptr) {
+            set_symbol_etype(id_token.value.id, prim_to_ptr(get_expression_type(type_token.type)));
+        } else {
+            set_symbol_etype(id_token.value.id, get_expression_type(type_token.type));
+        }
 
         if (get_current_token().type == T_LPAREN) {
             return function_definition(&type_token, &id_token);

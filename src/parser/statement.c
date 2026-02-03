@@ -161,12 +161,18 @@ static struct ast_node *return_statement() {
 static struct ast_node *local_var_declaration() {
     match_type();
     enum TOKEN_TYPE type_token = get_previous_token().type;
+    bool            is_ptr     = match(T_STAR);
 
     identifier();
 
     struct token id_token = get_previous_token();
     set_symbol_stype(id_token.value.id, ST_VARIABLE);
-    set_symbol_etype(id_token.value.id, get_expression_type(type_token));
+
+    if (is_ptr) {
+        set_symbol_etype(id_token.value.id, prim_to_ptr(get_expression_type(type_token)));
+    } else {
+        set_symbol_etype(id_token.value.id, get_expression_type(type_token));
+    }
 
     return mk_leaf(AST_DECL, type_token, id_token.value);
 }

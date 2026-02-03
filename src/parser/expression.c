@@ -113,5 +113,19 @@ static struct ast_node *primary() {
         return mk_node(AST_GROUPING, T_LPAREN, expr, NULL);
     }
 
+    if (get_current_token().type == T_AND) {
+        match(T_AND);
+        identifier();
+        struct token id_token = get_previous_token();
+        return mk_leaf(AST_ADDR, id_token.type, id_token.value);
+    }
+
+    if (get_current_token().type == T_STAR) {
+        match(T_STAR);
+        identifier();
+        struct token id_token = get_previous_token();
+        return mk_leaf(AST_DEREF, id_token.type, id_token.value);
+    }
+
     return parse_identifier();
 }

@@ -77,6 +77,14 @@ static uint32_t ast_walker(struct ast_node *node) {
         }
     }
 
+    if (node->ast_node_type == AST_ADDR) {
+        fprintf(dot_file, "%d [label = \"addr: s[%d]\"];", node_id, node->value.id);
+    }
+
+    if (node->ast_node_type == AST_DEREF) {
+        fprintf(dot_file, "%d [label = \"deref: s[%d]\"];", node_id, node->value.id);
+    }
+
     if (node->ast_node_type == AST_IDENTIFIER) {
         fprintf(dot_file, "%d [label = \"ref: s[%d]\"];", node_id, node->value.id);
     }

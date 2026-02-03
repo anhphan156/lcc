@@ -14,6 +14,10 @@ enum EXPRESSION_TYPE {
     ET_CHAR,
     ET_INT,
     ET_LONG,
+    ET_VOID_PTR,
+    ET_CHAR_PTR,
+    ET_INT_PTR,
+    ET_LONG_PTR,
 };
 
 #endif

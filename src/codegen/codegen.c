@@ -1,5 +1,6 @@
 #include "codegen/codegen.h"
 #include "defs.h"
+#include "parser/utils.h"
 #include "utils.h"
 #include "codegen/asm_file.h"
 #include "codegen/x86/cg.h"
@@ -169,6 +170,24 @@ static int ast_walker_expression(struct ast_node *node) {
 
     if (node->ast_node_type == AST_GROUPING) {
         return left_reg;
+    }
+
+    if (node->ast_node_type == AST_DEREF) {
+        const char *sym_name = get_symbol_name(node->value.id);
+        if (sym_name == NULL) {
+            fprintf(stderr, "Prepass failed: symbol_name not found\n");
+            BREAKPOINT;
+        }
+        return cg_dereference(sym_name, node->data_type);
+    }
+
+    if (node->ast_node_type == AST_ADDR) {
+        const char *sym_name = get_symbol_name(node->value.id);
+        if (sym_name == NULL) {
+            fprintf(stderr, "Prepass failed: symbol_name not found\n");
+            BREAKPOINT;
+        }
+        return cg_address(sym_name);
     }
 
     if (node->ast_node_type == AST_IDENTIFIER) {

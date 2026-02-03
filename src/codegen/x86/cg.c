@@ -241,7 +241,7 @@ void cg_print(int reg) {
         return;
 
     fprintf(asm_stream,
-            "leaq str(%%rip), %%rdi\n"
+            "leaq str(%%rip), %%rdi # print\n"
             "movq %s, %%rsi\n"
             "xor %%rax, %%rax\n"
             "call printf\n",
@@ -277,6 +277,50 @@ int cg_load(int v) {
     return reg;
 }
 
+int cg_address(const char *symbol_name) {
+    FILE *asm_stream = asmfget();
+    if (asm_stream == NULL)
+        return -1;
+
+    int r = reg_alloc();
+    if (r == -1) {
+        fprintf(stderr, "cg_load: can't allocate register\n");
+        BREAKPOINT;
+    }
+
+    fprintf(asm_stream, "leaq %s(%%rip), %s\n", symbol_name, registers_list[r]);
+
+    return r;
+}
+
+int cg_dereference(const char *symbol_name, enum EXPRESSION_TYPE size) {
+    FILE *asm_stream = asmfget();
+    if (asm_stream == NULL)
+        return -1;
+
+    int r = reg_alloc();
+    if (r == -1) {
+        fprintf(stderr, "cg_load: can't allocate register\n");
+        BREAKPOINT;
+    }
+
+    fprintf(asm_stream, "movq %s(%%rip), %s\n", symbol_name, registers_list[r]);
+
+    switch (size) {
+    case ET_CHAR_PTR:
+        fprintf(asm_stream, "movzbq (%s), %s\n", registers_list[r], registers_list[r]);
+        break;
+    case ET_INT_PTR:
+    case ET_LONG_PTR:
+        fprintf(asm_stream, "movq (%s), %s\n", registers_list[r], registers_list[r]);
+        break;
+    default:
+        break;
+    }
+
+    return r;
+}
+
 void cg_label(int id) {
     FILE *asm_stream = asmfget();
     if (asm_stream == NULL)
@@ -298,6 +342,9 @@ void cg_store_globl(int reg, const char *sym, enum EXPRESSION_TYPE size) {
         fprintf(asm_stream, "movl %sd, %s(%%rip)\n", registers_list[reg], sym);
         break;
     case ET_LONG:
+    case ET_CHAR_PTR:
+    case ET_INT_PTR:
+    case ET_LONG_PTR:
         fprintf(asm_stream, "movq %s, %s(%%rip)\n", registers_list[reg], sym);
         break;
     default:
